@@ -3,6 +3,11 @@ import numpy
 from scipy import interpolate
 import math
 import time
+import jax.numpy as jnp
+from jax import jacfwd
+import jax
+from jax.api import jit
+
 
 
 class CartPole():
@@ -44,6 +49,40 @@ class CartPole():
             self.q)) / (
                       self.l * self.mc + self.l * self.mp * sin(self.q) * sin(self.q))  # acceleration of theta
         self.f = vertcat(self.dx, self.dq, ddx, ddq)  # continuous dynamics
+
+        # def _forward_dynamics(state, control):
+        #     x, x_dot, theta, theta_dot = state
+        #     #calculate xacc & thetaacc using PDP
+        #     # x = 0.04653214
+        #     dx = x_dot
+        #     q = theta
+        #     dq = theta_dot
+        #     U = control
+
+        #     #mass of cart and pole
+        #     mp = 0.1
+        #     mc = 1.0
+        #     l = 0.5
+
+        #     g=9.81
+
+        #     ddx = (U + mp * sin(q) * (l * dq * dq + g * cos(q))) / (
+        #             mc + mp * sin(q) * sin(q))  # acceleration of x
+        #     ddq = (-U * cos(q) - mp * l * dq * dq * sin(q) * cos(q) - (
+        #             mc + mp) * g * sin(
+        #         q)) / (
+        #                     l * mc + l * mp * sin(q) * sin(q))  # acceleration of theta
+        #     xacc = ddx
+        #     thetaacc = ddq
+        #     #Euler Integration
+        #     x = x + self.tau * x_dot
+        #     x_dot = x_dot + self.tau * xacc
+        #     theta = theta + self.tau * theta_dot
+        #     theta_dot = theta_dot + self.tau * thetaacc
+
+        #     return jnp.array([x, x_dot, theta, theta_dot])
+
+        # self.forward_dynamics = _forward_dynamics
 
     def initCost(self, wx=None, wq=None, wdx=None, wdq=None, wu=0.001):
         # declare system parameters
@@ -137,13 +176,17 @@ class ControlPlanning:
 
     def setDyn(self, ode):
         self.dyn = ode
-        self.dyn_fn = casadi.Function('dynFun', [self.state, self.control], [self.dyn])
+        # self.dyn_fn = casadi.Function('dynFun', [self.state, self.control], [self.dyn])
+        self.dyn_fn = ode
 
         # Differentiate system dynamics
-        self.dfx = jacobian(self.dyn, self.state)
-        self.dfx_fn = casadi.Function('dfx', [self.state, self.control], [self.dfx])
-        self.dfu = jacobian(self.dyn, self.control)
-        self.dfu_fn = casadi.Function('dfu', [self.state, self.control], [self.dfu])
+        # self.dfx = jacobian(self.dyn, self.state)
+        # self.dfx_fn = casadi.Function('dfx', [self.state, self.control], [self.dfx])
+        # self.dfu = jacobian(self.dyn, self.control)
+        # self.dfu_fn = casadi.Function('dfu', [self.state, self.control], [self.dfu])
+
+        self.dfx_fn = jax.jit(jax.jacfwd(self.dyn,argnums=0))
+        self.dfu_fn = jax.jit(jax.jacfwd(self.dyn,argnums=1))
 
     def setPathCost(self, path_cost):
         self.path_cost = path_cost
@@ -231,17 +274,18 @@ class ControlPlanning:
         assert hasattr(self, 'policy_fn'), "Set the control policy first, you may use [setPolicy_polyControl] "
 
         if type(ini_state) == list:
-            ini_state = numpy.array(ini_state)
+            ini_state = jnp.array(ini_state)
 
         # do the system integration
-        control_traj = numpy.zeros((horizon, self.n_control))
-        state_traj = numpy.zeros((horizon + 1, self.n_state))
+        control_traj = jnp.zeros((horizon, self.n_control))
+        state_traj = jnp.zeros((horizon + 1, self.n_state))
         state_traj[0, :] = ini_state
         cost = 0
         for t in range(horizon):
             curr_x = state_traj[t, :]
             curr_u = self.policy_fn(t, curr_x, auxvar_value).full().flatten()
-            state_traj[t + 1, :] = self.dyn_fn(curr_x, curr_u).full().flatten()
+            # state_traj[t + 1, :] = self.dyn_fn(curr_x, curr_u).full().flatten()
+            state_traj[t + 1, :] = self.dyn_fn(curr_x, curr_u).flatten()
             control_traj[t, :] = curr_u
             cost += self.path_cost_fn(curr_x, curr_u).full()
         cost += self.final_cost_fn(state_traj[-1, :]).full()
@@ -264,10 +308,13 @@ class ControlPlanning:
         for t in range(numpy.size(control_traj, 0)):
             curr_x = state_traj[t, :]
             curr_u = control_traj[t, :]
+            # dynF += [self.dfx_fn(curr_x, curr_u).full()]
+            # dynG += [self.dfu_fn(curr_x, curr_u).full()]
             start_time = time.time()
-            dynF += [self.dfx_fn(curr_x, curr_u).full()]
+            dynF += [self.dfx_fn(curr_x, curr_u)]
             print("jacobian takes %s seconds ---" % (time.time() - start_time))
-            dynG += [self.dfu_fn(curr_x, curr_u).full()]
+            # print("dynF",dynF)
+            dynG += [self.dfu_fn(curr_x, curr_u)]
             dUx += [self.dpolicy_dx_fn(t, curr_x, auxvar_value).full()]
             dUe += [self.dpolicy_de_fn(t, curr_x, auxvar_value).full()]
 
@@ -282,11 +329,11 @@ class ControlPlanning:
 
         # pre-requisite check
         if type(dynF) != list or type(dynG) != list or type(dUx) != list or type(dUe) != list:
-            assert False, "The input dynF, dynE, dUx, and dUe should be list of numpy.array!"
+            assert False, "The input dynF, dynE, dUx, and dUe should be list of jnp.array!"
         if len(dynG) != len(dynF) or len(dUe) != len(dUx) or len(dUe) != len(dynG):
             assert False, "The length of dynF, dynE, dUx, and dUe should be the same"
-        if type(ini_condition) is not numpy.ndarray:
-            assert False, "The initial condition should be numpy.array"
+        if type(ini_condition) is not jnp.ndarray:
+            assert False, "The initial condition should be jnp.array"
 
         horizon = len(dynF)
         state_traj = [ini_condition]
@@ -297,8 +344,8 @@ class ControlPlanning:
             Ux_t = dUx[t]
             Ue_t = dUe[t]
             X_t = state_traj[t]
-            U_t = numpy.matmul(Ux_t, X_t) + Ue_t
-            state_traj += [numpy.matmul(F_t, X_t) + numpy.matmul(G_t, U_t)]
+            U_t = jnp.matmul(Ux_t, X_t) + Ue_t
+            state_traj += [jnp.matmul(F_t, X_t) + jnp.matmul(G_t, U_t)]
             control_traj += [U_t]
 
         aux_sol = {'state_traj': state_traj,
@@ -307,7 +354,7 @@ class ControlPlanning:
 
     def init_step(self, horizon, n_poly=5):
         # set the control polynomial policy
-        pivots = numpy.linspace(0, horizon, n_poly + 1)
+        pivots = jnp.linspace(0, horizon, n_poly + 1)
         self.setPolyControl(pivots)
 
     def init_step_neural_policy(self, hidden_layers=None):
@@ -330,24 +377,60 @@ class ControlPlanning:
         # solve the auxiliary control system
         aux_sol = self.integrateAuxSys(dynF=aux_sys['dynF'], dynG=aux_sys['dynG'],
                                        dUx=aux_sys['dUx'], dUe=aux_sys['dUe'],
-                                       ini_condition=numpy.zeros((self.n_state, self.n_auxvar)))
+                                       ini_condition=jnp.zeros((self.n_state, self.n_auxvar)))
         dxdauxvar_traj = aux_sol['state_traj']
         dudauxvar_traj = aux_sol['control_traj']
 
         # Evaluate the current loss and the gradients
-        dauxvar = numpy.zeros(self.n_auxvar)
+        dauxvar = jnp.zeros(self.n_auxvar)
         for t in range(horizon):
             # chain rule
-            dauxvar += (numpy.matmul(self.dcx_fn(state_traj[t, :], control_traj[t, :]).full(), dxdauxvar_traj[t]) +
-                        numpy.matmul(self.dcu_fn(state_traj[t, :], control_traj[t, :]).full(),
+            dauxvar += (jnp.matmul(self.dcx_fn(state_traj[t, :], control_traj[t, :]).full(), dxdauxvar_traj[t]) +
+                        jnp.matmul(self.dcu_fn(state_traj[t, :], control_traj[t, :]).full(),
                                      dudauxvar_traj[t])).flatten()
-        dauxvar += numpy.matmul(self.dhx_fn(state_traj[-1, :]).full(), dxdauxvar_traj[-1]).flatten()
+        dauxvar += jnp.matmul(self.dhx_fn(state_traj[-1, :]).full(), dxdauxvar_traj[-1]).flatten()
 
         return loss, dauxvar
 
+@jit
+def dynamics(X,U):
+    from jax.numpy import sin, cos
+    # start_time = time.time()    
+    g = 10.0
+    mc, mp, l = 0.1, 0.1, 1
+    # x, q, dx, dq = SX.sym('x'), SX.sym('q'), SX.sym('dx'), SX.sym('dq')
+    # X = vertcat(x, q, dx, dq)
+    x, q, dx, dq = X
+    # print("x",x)
+    # U = SX.sym('u')
+    # print("array takes %s seconds ---" % (time.time() - start_time)) 
 
-if __name__ == "__main__":
+    ddx = (U + mp * sin(q) * (l * dq * dq + g * cos(q))) / (
+            mc + mp * sin(q) * sin(q))  # acceleration of x
+    ddq = (-U * cos(q) - mp * l * dq * dq * sin(q) * cos(q) - (
+            mc + mp) * g * sin(
+        q)) / (
+                    l * mc + l * mp * sin(q) * sin(q))  # acceleration of theta
+    # f = vertcat(dx, dq, ddx, ddq)  # continuous dynamics
+    # print("dx",dx)
+    # print("ddx",ddx)
+    # dx = jnp.array([dx])
+    # dq = jnp.array([dq])
+    ddx = ddx[0]
+    ddq = ddq[0]
+       
+    f = jnp.array([dx, dq, ddx, ddq])
 
+    
+
+    dt = 0.05
+
+    next_X = X + dt * f    
+
+    return next_X 
+
+@jit
+def run():
     # --------------------------- load environment ----------------------------------------
     cartpole = CartPole()
     mc, mp, l = 0.1, 0.1, 1
@@ -363,9 +446,10 @@ if __name__ == "__main__":
     print("cartpole.X",type(cartpole.X))
     oc.setStateVariable(cartpole.X)
     oc.setControlVariable(cartpole.U)
-    dyn = cartpole.X + dt * cartpole.f
-    print("dyn",dyn)
-    oc.setDyn(dyn)
+    # dyn = cartpole.X + dt * cartpole.f
+    # print("dyn",dyn)
+    # oc.setDyn(dyn)
+    oc.setDyn(dynamics)
     oc.setPathCost(cartpole.path_cost)
     oc.setFinalCost(cartpole.final_cost)
 
@@ -376,7 +460,9 @@ if __name__ == "__main__":
         lr = 1e-4
         loss_trace, parameter_trace = [], []
         oc.init_step_neural_policy(hidden_layers=[oc.n_state,oc.n_state])
-        initial_parameter = numpy.random.randn(oc.n_auxvar)
+        # initial_parameter = jnp.random.randn(oc.n_auxvar)
+        key = jax.random.PRNGKey(0)
+        initial_parameter = jax.random.normal(key,shape=[oc.n_auxvar])
         current_parameter = initial_parameter
         max_iter = 5000
         start_time = time.time()
@@ -390,6 +476,79 @@ if __name__ == "__main__":
             # print
             if k % 100 == 0:
                 print('trial:', j ,'Iter:', k, 'loss:', loss)
+
+
+@jit
+def jax_jacobian():
+    import jax
+    from jax.numpy import sin, cos           
+    # fwdfunc = jax.jacfwd(dynamics,argnums=0)
+    fwdfunc = jax.jit(jax.jacfwd(dynamics,argnums=0))
+    _X = jnp.array([1., 1., 1., 1.])
+    _U = 1.0
+    start_time = time.time()
+    jac = fwdfunc(_X,_U)
+    print("jax jacobian takes %s seconds ---" % (time.time() - start_time))
+    print("jac",jac)
+
+def casadi_jacobian():
+    # Declare system variables
+    g = 10.0
+    mc, mp, l = 0.1, 0.1, 1
+    x, q, dx, dq = SX.sym('x'), SX.sym('q'), SX.sym('dx'), SX.sym('dq')
+    X = vertcat(x, q, dx, dq)
+    U = SX.sym('u')
+    ddx = (U + mp * sin(q) * (l * dq * dq + g * cos(q))) / (
+            mc + mp * sin(q) * sin(q))  # acceleration of x
+    ddq = (-U * cos(q) - mp * l * dq * dq * sin(q) * cos(q) - (
+            mc + mp) * g * sin(
+        q)) / (
+                    l * mc + l * mp * sin(q) * sin(q))  # acceleration of theta
+    f = vertcat(dx, dq, ddx, ddq)  # continuous dynamics
+
+    dt = 0.05
+    dyn = X + dt * f
+
+    dfx = jacobian(dyn, X)
+    dfx_fn = casadi.Function('dfx', [X,U], [dfx])
+
+    _x = vertcat(1,1,1,1)
+    _u = 1
+    start_time = time.time()
+    dynF = dfx_fn(_x,_u).full()
+    print("casadi jacobian takes %s seconds ---" % (time.time() - start_time))
+    print("casadi jacobian",dynF)
+
+if __name__ == "__main__":
+    # import jax
+
+    # start_time = time.time()
+    # def f(x):
+    #     return jnp.asarray(
+    #      [x[0], 5*x[2], 4*x[1]**2 - 2*x[2], x[2] * jnp.sin(x[0])])
+
+    # print(jax.jit(jax.jacfwd(f))(jnp.array([1., 2., 3.])))
+    # print("jax jacobian takes %s seconds ---" % (time.time() - start_time))
+
+    # #casadi jacobian
+
+    # x = SX.sym('x')
+    # # f = x**2
+
+
+    # dfx = jacobian(f, x)
+    # dfx_fn = casadi.Function('dfx', [x], [dfx])
+
+    # _x = 10
+    # dynF = dfx_fn(_x).full()
+    # # output = dfx(f,0.1)
+    # print("casadi jacobian",dynF)
+
+    # casadi_jacobian()
+    # jax_jacobian()
+    run()
+
+
 
 
 
