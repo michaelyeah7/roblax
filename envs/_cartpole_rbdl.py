@@ -57,7 +57,7 @@ class Cartpole_rbdl(Env):
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
         #three dynamic options "RBDL" "Original" "PDP"
-        self.dynamics_option = "Original"
+        self.dynamics_option = "PDP"
         # self.model["NB"] = self.model["NB"] + 1 
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
@@ -143,12 +143,12 @@ class Cartpole_rbdl(Env):
 
                 g=9.81
 
-                ddx = (U + mp * sin(q) * (l * dq * dq + g * cos(q))) / (
-                        mc + mp * sin(q) * sin(q))  # acceleration of x
-                ddq = (-U * cos(q) - mp * l * dq * dq * sin(q) * cos(q) - (
-                        mc + mp) * g * sin(
+                ddx = (U + mp * jnp.sin(q) * (l * dq * dq + g * jnp.cos(q))) / (
+                        mc + mp * jnp.sin(q) * jnp.sin(q))  # acceleration of x
+                ddq = (-U * jnp.cos(q) - mp * l * dq * dq * jnp.sin(q) * jnp.cos(q) - (
+                        mc + mp) * g * jnp.sin(
                     q)) / (
-                                l * mc + l * mp * sin(q) * sin(q))  # acceleration of theta
+                                l * mc + l * mp * jnp.sin(q) * jnp.sin(q))  # acceleration of theta
                 xacc = ddx
                 thetaacc = ddq
 
@@ -199,14 +199,14 @@ class Cartpole_rbdl(Env):
         # print("x",x)
         # print("type",type(x))
 
-        # done = jax.lax.cond(
-        #     (jnp.abs(x) > jnp.abs(self.x_threshold))
-        #     + (jnp.abs(theta) > jnp.abs(self.theta_threshold_radians)),
-        #     lambda done: True,
-        #     lambda done: False,
-        #     None,
-        # )
-        done = False
+        done = jax.lax.cond(
+            (jnp.abs(x) > jnp.abs(self.x_threshold))
+            + (jnp.abs(theta) > jnp.abs(self.theta_threshold_radians)),
+            lambda done: True,
+            lambda done: False,
+            None,
+        )
+        # done = False
 
         # reward = 1 - done
         reward = self.reward_func(self.state)
