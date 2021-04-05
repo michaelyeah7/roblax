@@ -60,11 +60,11 @@ def loop_for_render(context, x):
     prev_state = copy.deepcopy(env.state)
     next_state, reward, done, _ = env.step(env.state,control)
 
-    # #update hybrid model
-    # model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
-    # w, b = hybrid_env.model_params
-    # dw, db = model_grads
-    # hybrid_env.model_params = [w - hybrid_env.model_lr * dw, b - hybrid_env.model_lr * db]
+    #update hybrid model
+    model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
+    w, b = hybrid_env.model_params
+    dw, db = model_grads
+    hybrid_env.model_params = [w - hybrid_env.model_lr * dw, b - hybrid_env.model_lr * db]
 
 
     return (env, hybrid_env, agent), reward, done
@@ -90,7 +90,7 @@ hybrid_env = Cartpole_Hybrid(model_lr=1e-1)
 agent = Deep_Cartpole_rbdl(
              env_state_size = 4,
              action_space = jnp.array([0]),
-             learning_rate = 0.1,
+             learning_rate = 0.5,
              gamma = 0.99,
              max_episode_length = 500,
              seed = 0
@@ -105,7 +105,7 @@ update_params = True
 render = True
 
 if load_params == True:
-    loaded_params = pickle.load( open( "examples/cartpole_svg_params_episode_900_2021-04-04 14:48:48.txt", "rb" ) )
+    loaded_params = pickle.load( open( "examples/cartpole_svg_params_episode_100_2021-04-05 06:10:53.txt", "rb" ) )
     agent.params = loaded_params
 
  # for loop version
@@ -128,13 +128,13 @@ for j in range(episodes_num):
 
     #update the parameter
     if (update_params==True):
-        env.reset()
-        # hybrid_env.reset() 
+        # env.reset()
+        hybrid_env.reset() 
         # grads = f_grad(prev_state, agent.params, env, agent)
 
         #train agent using learned hybrid env
-        # grads = f_grad(hybrid_env, agent, agent.params,T)
-        grads = f_grad(env, agent, agent.params, T)
+        grads = f_grad(hybrid_env, agent, agent.params,T)
+        # grads = f_grad(env, agent, agent.params, T)
         #get norm square
         total_norm_sqr = 0                
         for (dw,db) in grads:

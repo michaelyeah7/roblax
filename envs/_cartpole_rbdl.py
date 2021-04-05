@@ -108,11 +108,13 @@ class Cartpole_rbdl(Env):
             #works for original
             # force = np.clip(action[0] * 100,-10,10)
             #works for PDP and Original
-            force = action[0] * 10
+            # force = action[0] * 10
             #works for RBDL
             # force = action[0] * 100
+            #works for hybrid env
+            force = action[0]
             # print("fr",action)
-            # print("force",force)
+            print("force",force)
             if (self.dynamics_option == "Original"):
                 costheta = jnp.cos(theta)
                 sintheta = jnp.sin(theta)
