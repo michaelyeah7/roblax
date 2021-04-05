@@ -114,7 +114,7 @@ class Cartpole_rbdl(Env):
             #works for hybrid env
             force = action[0]
             # print("fr",action)
-            print("force",force)
+            # print("force",force)
             if (self.dynamics_option == "Original"):
                 costheta = jnp.cos(theta)
                 sintheta = jnp.sin(theta)
@@ -298,6 +298,7 @@ class Cartpole_Hybrid():
         #TODO add sigma
         self.model_params = [rng.randn(4, 4),rng.randn(4)]
         self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model 
+        self.model_losses = []
         self.tau = 0.02
         self.theta_threshold_radians = 12 * 2 * math.pi / 360
         self.x_threshold = 2.4

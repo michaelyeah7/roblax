@@ -48,9 +48,12 @@ def loss_hybrid_model(prev_state, control, true_next_state, model_params):
     next_state = hybrid_env.forward(prev_state, control, model_params)
     model_loss = jnp.sum((next_state - true_next_state)**2)
     # model_loss = jnp.linalg.norm(next_state - true_next_state)
-    print("model loss",model_loss)
+    # print("model loss",model_loss)
+    # print("model_loss.value",model_loss[0])
+    # model_losses.append(model_loss)
     return model_loss
-model_loss_grad = jax.grad(loss_hybrid_model,argnums=3)
+# model_loss_grad = jax.grad(loss_hybrid_model,argnums=3)
+model_loss_grad = jax.value_and_grad(loss_hybrid_model,argnums=3)
 
 def loop_for_render(context, x):
     env, hybrid_env, agent, params = context
@@ -61,7 +64,9 @@ def loop_for_render(context, x):
     next_state, reward, done, _ = env.step(env.state,control)
 
     #update hybrid model
-    model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
+    model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
+    # print("model_loss",model_loss)
+    hybrid_env.model_losses.append(model_loss)
     w, b = hybrid_env.model_params
     dw, db = model_grads
     hybrid_env.model_params = [w - hybrid_env.model_lr * dw, b - hybrid_env.model_lr * db]
@@ -100,7 +105,7 @@ agent = Deep_Cartpole_rbdl(
 # update_params = False
 # render = True
 
-load_params = False
+load_params = True
 update_params = True
 render = True
 
@@ -114,9 +119,10 @@ print(env.reset())
 reward = 0
 loss = 0
 episode_loss = []
-episodes_num = 1000
-# T = 200
-T = 1000
+# episodes_num = 1000
+episodes_num = 100
+T = 100
+# T = 1000
 for j in range(episodes_num):
 
     loss = 0
@@ -125,6 +131,7 @@ for j in range(episodes_num):
 
     #update hybrid model using real trajectories
     loss = roll_out_for_render(env, hybrid_env, agent, agent.params, T)
+    # print("hybrid_env.model_losses",hybrid_env.model_losses)
 
     #update the parameter
     if (update_params==True):
@@ -163,9 +170,11 @@ for j in range(episodes_num):
             pickle.dump(agent.params, fp)
 # reward_forloop = reward
 # print('reward_forloop = ' + str(reward_forloop))
-plt.plot(episode_loss[1:])
+# plt.plot(episode_loss[1:])
+plt.plot(hybrid_env.model_losses)
 
 #save plot and params
-plt.savefig('cartpole_svg_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+# plt.savefig('cartpole_svg_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+plt.savefig('cartpole_svg_model_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
 
 # fp.close()
