@@ -296,7 +296,8 @@ class Cartpole_Hybrid():
         rng=npr.RandomState(0)
         self.model_lr = model_lr
         #TODO add sigma
-        self.model_params = [rng.randn(4, 4),rng.randn(4)]
+        # self.model_params = [rng.randn(4, 4),rng.randn(4)]
+        self.model_params = [(rng.randn(4, 32),rng.randn(32)),(rng.randn(32, 4),rng.randn(4))]
         self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model 
         self.model_losses = []
         self.tau = 0.02
@@ -335,10 +336,15 @@ class Cartpole_Hybrid():
 
         next_state = jnp.array([x, x_dot, theta, theta_dot])
 
-        w, b = model_params
-        outputs = jnp.dot(next_state, w) + b
-        dist = jax.nn.elu(outputs)
-
+        # w, b = model_params
+        # outputs = jnp.dot(next_state, w) + b
+        # dist = jax.nn.elu(outputs)
+        activations = next_state
+        for w,b in model_params[:-1]:
+            outputs = jnp.dot(activations, w) + b
+            activations = jax.nn.elu(outputs)
+        final_w, final_b = model_params[-1]
+        dist = jnp.dot(activations, final_w) + final_b
         return dist
 
     def step(self, state, action):

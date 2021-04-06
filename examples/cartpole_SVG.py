@@ -67,9 +67,27 @@ def loop_for_render(context, x):
     model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
     # print("model_loss",model_loss)
     hybrid_env.model_losses.append(model_loss)
-    w, b = hybrid_env.model_params
-    dw, db = model_grads
-    hybrid_env.model_params = [w - hybrid_env.model_lr * dw, b - hybrid_env.model_lr * db]
+    # w, b = hybrid_env.model_params
+    # dw, db = model_grads
+    # hybrid_env.model_params = [w - hybrid_env.model_lr * dw, b - hybrid_env.model_lr * db]
+
+    #normalize the gradients
+    total_norm_sqr = 0                
+    for (dw,db) in model_grads:
+        # print("previous dw",dw)
+        # dw = normalize(dw)
+        # db = normalize(db[:,np.newaxis],axis =0).ravel()
+        total_norm_sqr += np.linalg.norm(dw) ** 2
+        total_norm_sqr += np.linalg.norm(db) ** 2
+    # print("grads",grads)
+
+    #scale the gradient
+    gradient_clip = 0.2
+    scale = min(
+        1.0, gradient_clip / (total_norm_sqr**0.5 + 1e-4))
+
+    hybrid_env.model_params = [(w - hybrid_env.model_lr * scale * dw, b - hybrid_env.model_lr * scale * db)
+        for (w, b), (dw, db) in zip(hybrid_env.model_params, model_grads)]
 
 
     return (env, hybrid_env, agent), reward, done
@@ -120,7 +138,7 @@ reward = 0
 loss = 0
 episode_loss = []
 # episodes_num = 1000
-episodes_num = 100
+episodes_num = 1000
 T = 100
 # T = 1000
 for j in range(episodes_num):
@@ -166,15 +184,27 @@ for j in range(episodes_num):
     episode_loss.append(loss)
     print("loss is %f" % loss)
     if (j%100==0 and j!=0 and update_params==True):
+        #for agent loss
         with open("examples/cartpole_svg_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.params, fp)
+        plt.figure()
+        plt.plot(episode_loss[1:])
+        plt.savefig('cartpole_svg_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()
+        #for model loss
+        with open("examples/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+            pickle.dump(hybrid_env.model_params, fp)
+        plt.figure()
+        plt.plot(hybrid_env.model_losses)
+        plt.savefig(('cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()
 # reward_forloop = reward
 # print('reward_forloop = ' + str(reward_forloop))
 # plt.plot(episode_loss[1:])
-plt.plot(hybrid_env.model_losses)
+# plt.plot(hybrid_env.model_losses)
 
 #save plot and params
 # plt.savefig('cartpole_svg_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-plt.savefig('cartpole_svg_model_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+# plt.savefig('cartpole_svg_model_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
 
 # fp.close()
