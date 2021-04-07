@@ -31,18 +31,24 @@ def loop(context, x):
 def roll_out(env, agent, params, T):
     gamma = 0.9
     losses = 0.0
-    for i in range(T):
+    for i in range(5):
         (env, agent), r, done= loop((env, agent,params), i)
         losses = losses * gamma + r 
         if done:
             print("end this episode because out of threshhold in policy update")
             env.past_reward = 0
             break
-        
+    losses += agent.value(env.state) * gamma        
     return losses
 
-f_grad = jax.grad(roll_out,argnums=2)
+f_grad = jax.value_and_grad(roll_out,argnums=2)
 
+def loss_value(state, next_state, reward, value_params):
+    td = reward + agent.value(next_state, value_params) - agent.value(next_state, value_params)
+    value_loss = 0.5 * (td ** 2)
+    return value_loss
+
+value_loss_grad = jax.value_and_grad(loss_value,argnums=3)
 
 def loss_hybrid_model(prev_state, control, true_next_state, model_params):
     next_state = hybrid_env.forward(prev_state, control, model_params)
@@ -63,31 +69,16 @@ def loop_for_render(context, x):
     prev_state = copy.deepcopy(env.state)
     next_state, reward, done, _ = env.step(env.state,control)
 
+    #update value function
+    value_loss, value_grads =  value_and_grad(prev_state,next_state,reward,agent.value_params)
+    agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
+    
     #update hybrid model
     model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
     # print("model_loss",model_loss)
     hybrid_env.model_losses.append(model_loss)
-    # w, b = hybrid_env.model_params
-    # dw, db = model_grads
-    # hybrid_env.model_params = [w - hybrid_env.model_lr * dw, b - hybrid_env.model_lr * db]
 
-    #normalize the gradients
-    total_norm_sqr = 0                
-    for (dw,db) in model_grads:
-        # print("previous dw",dw)
-        # dw = normalize(dw)
-        # db = normalize(db[:,np.newaxis],axis =0).ravel()
-        total_norm_sqr += np.linalg.norm(dw) ** 2
-        total_norm_sqr += np.linalg.norm(db) ** 2
-    # print("grads",grads)
-
-    #scale the gradient
-    gradient_clip = 0.2
-    scale = min(
-        1.0, gradient_clip / (total_norm_sqr**0.5 + 1e-4))
-
-    hybrid_env.model_params = [(w - hybrid_env.model_lr * scale * dw, b - hybrid_env.model_lr * scale * db)
-        for (w, b), (dw, db) in zip(hybrid_env.model_params, model_grads)]
+    hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
 
 
     return (env, hybrid_env, agent), reward, done
@@ -153,33 +144,16 @@ for j in range(episodes_num):
 
     #update the parameter
     if (update_params==True):
-        # env.reset()
-        hybrid_env.reset() 
-        # grads = f_grad(prev_state, agent.params, env, agent)
+        #update policy using 20 horizon 5 partial trajectories
+        for i in range(20):
+            # env.reset()
+            hybrid_env.reset() 
+            # grads = f_grad(prev_state, agent.params, env, agent)
 
-        #train agent using learned hybrid env
-        grads = f_grad(hybrid_env, agent, agent.params,T)
-        # grads = f_grad(env, agent, agent.params, T)
-        #get norm square
-        total_norm_sqr = 0                
-        for (dw,db) in grads:
-            # print("previous dw",dw)
-            # dw = normalize(dw)
-            # db = normalize(db[:,np.newaxis],axis =0).ravel()
-            total_norm_sqr += np.linalg.norm(dw) ** 2
-            total_norm_sqr += np.linalg.norm(db) ** 2
-        # print("grads",grads)
-
-        #scale the gradient
-        gradient_clip = 0.2
-        scale = min(
-            1.0, gradient_clip / (total_norm_sqr**0.5 + 1e-4))
-
-        agent.params = [(w - agent.lr * scale * dw, b - agent.lr * scale * db)
-                for (w, b), (dw, db) in zip(agent.params, grads)]
-        
-        # agent.params = [(w - agent.lr * dw, b - agent.lr * db)
-        #         for (w, b), (dw, db) in zip(agent.params, grads)]
+            #train agent using learned hybrid env
+            total_return, grads = f_grad(hybrid_env, agent, agent.params,T)
+            # grads = f_grad(env, agent, agent.params, T)
+            agent.params = agent.update(grads, agent.params, agent.lr)
 
     episode_loss.append(loss)
     print("loss is %f" % loss)

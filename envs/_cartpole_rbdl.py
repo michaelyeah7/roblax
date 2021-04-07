@@ -307,8 +307,11 @@ class Cartpole_Hybrid():
 
     def reset(self):
         # self.random = Random(seed)
+        # self.state = jax.random.uniform(
+        #     self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
+        # )
         self.state = jax.random.uniform(
-            self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
+            self.random.get_key(), shape=(4,), minval=-0.209, maxval=0.209
         )
         return self.state
 
