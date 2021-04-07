@@ -38,7 +38,7 @@ def roll_out(env, agent, params, T):
             print("end this episode because out of threshhold in policy update")
             env.past_reward = 0
             break
-    losses += agent.value(env.state) * gamma        
+    losses += agent.value(env.state,agent.value_params) * gamma        
     return losses
 
 f_grad = jax.value_and_grad(roll_out,argnums=2)
@@ -70,7 +70,7 @@ def loop_for_render(context, x):
     next_state, reward, done, _ = env.step(env.state,control)
 
     #update value function
-    value_loss, value_grads =  value_and_grad(prev_state,next_state,reward,agent.value_params)
+    value_loss, value_grads =  value_loss_grad(prev_state,next_state,reward,agent.value_params)
     agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
     
     #update hybrid model
@@ -114,7 +114,7 @@ agent = Deep_Cartpole_rbdl(
 # update_params = False
 # render = True
 
-load_params = True
+load_params = False
 update_params = True
 render = True
 

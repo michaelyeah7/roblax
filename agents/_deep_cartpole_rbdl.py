@@ -85,7 +85,7 @@ class Deep_Cartpole_rbdl(Agent):
         self.params = init_random_params(param_scale, actor_layer_sizes)
         #critic weights
         critic_layer_sizes = [4, 32, 32, 1]
-        self.values_params =  init_random_params(param_scale, critic_layer_sizes)
+        self.value_params =  init_random_params(param_scale, critic_layer_sizes)
 
         self.W = jax.random.uniform(
             self.random.generate_key(),
@@ -142,7 +142,7 @@ class Deep_Cartpole_rbdl(Agent):
             activations = jnp.tanh(outputs)
         final_w, final_b = params[-1]
         logits = jnp.dot(activations, final_w) + final_b
-        return logits
+        return logits[0]
 
     def softmax_grad(self, softmax: jnp.ndarray) -> jnp.ndarray:
         """
