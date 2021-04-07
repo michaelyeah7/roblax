@@ -44,7 +44,7 @@ def roll_out(env, agent, params, T):
 f_grad = jax.value_and_grad(roll_out,argnums=2)
 
 def loss_value(state, next_state, reward, value_params):
-    td = reward + agent.value(next_state, value_params) - agent.value(next_state, value_params)
+    td = reward + agent.value(next_state, value_params) - agent.value(state, value_params)
     value_loss = 0.5 * (td ** 2)
     return value_loss
 
@@ -71,13 +71,13 @@ def loop_for_render(context, x):
 
     #update value function
     value_loss, value_grads =  value_loss_grad(prev_state,next_state,reward,agent.value_params)
+    agent.value_losses.append(value_loss)
     agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
     
     #update hybrid model
     model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
     # print("model_loss",model_loss)
     hybrid_env.model_losses.append(model_loss)
-
     hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
 
 
@@ -165,6 +165,13 @@ for j in range(episodes_num):
         plt.plot(episode_loss[1:])
         plt.savefig('cartpole_svg_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
+        #for value function loss
+        with open("examples/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+            pickle.dump(agent.value_params, fp)
+        plt.figure()
+        plt.plot(agent.value_losses)
+        plt.savefig(('cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()        
         #for model loss
         with open("examples/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
             pickle.dump(hybrid_env.model_params, fp)

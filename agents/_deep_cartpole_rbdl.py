@@ -64,6 +64,7 @@ class Deep_Cartpole_rbdl(Agent):
 
         self.d_a_d_w = jax.grad(self.__call__,argnums=1)
         self.reset()
+        self.value_losses = []
 
     def reset(self) -> None:
         """
