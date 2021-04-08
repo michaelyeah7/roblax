@@ -220,7 +220,8 @@ class Cartpole_rbdl(Env):
         # x, x_dot, theta, theta_dot = state
         # reward = state[0]**2 + (state[1])**2 + 100*state[2]**2 + state[3]**2 
         # reward = jnp.exp(state[0])-1 + state[2]**2 + state[3]**2 
-        reward = jnp.exp(state[0]**2) + (100*state[2])**2 + state[3]**2 
+        # reward = jnp.exp(state[0]**2) + (100*state[2])**2 + state[3]**2 
+        reward = 0.1 * (state[0]**2) + 0.6 * (state[2]**2) + 0.1 * (state[1]**2) + 0.1 * (state[3]**2)
         return reward
 
 
@@ -297,7 +298,8 @@ class Cartpole_Hybrid():
         self.model_lr = model_lr
         #TODO add sigma
         # self.model_params = [rng.randn(4, 4),rng.randn(4)]
-        self.model_params = [(rng.randn(4, 32),rng.randn(32)),(rng.randn(32, 4),rng.randn(4))]
+        self.model_params = [(rng.randn(4, 4),rng.randn(4))]
+        # self.model_params = [(rng.randn(4, 32),rng.randn(32)),(rng.randn(32, 4),rng.randn(4))]
         self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model 
         self.model_losses = []
         self.tau = 0.02

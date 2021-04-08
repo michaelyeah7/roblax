@@ -10,15 +10,6 @@ from time import gmtime, strftime
 from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
 import numpy as np
 
-def forward(state, w, env, agent):
-    action = agent.__call__(state, w)
-    next_state = env.dynamics(state,action)
-    # next_state, reward, done, _ = env.step(state,action)
-    reward = env.reward_func(next_state)
-    return reward
-
-
-
 
 def loop(context, x):
     env, agent, params = context
@@ -74,11 +65,11 @@ def loop_for_render(context, x):
     agent.value_losses.append(value_loss)
     agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
     
-    #update hybrid model
-    model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
-    # print("model_loss",model_loss)
-    hybrid_env.model_losses.append(model_loss)
-    hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
+    # #update hybrid model
+    # model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
+    # # print("model_loss",model_loss)
+    # hybrid_env.model_losses.append(model_loss)
+    # hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
 
 
     return (env, hybrid_env, agent), reward, done
@@ -146,13 +137,13 @@ for j in range(episodes_num):
     if (update_params==True):
         #update policy using 20 horizon 5 partial trajectories
         for i in range(20):
-            # env.reset()
-            hybrid_env.reset() 
-            # grads = f_grad(prev_state, agent.params, env, agent)
+            env.reset()
+            # hybrid_env.reset() 
 
             #train agent using learned hybrid env
-            total_return, grads = f_grad(hybrid_env, agent, agent.params,T)
-            # grads = f_grad(env, agent, agent.params, T)
+            total_return, grads = f_grad(env, agent, agent.params, T)
+            # total_return, grads = f_grad(hybrid_env, agent, agent.params,T)
+            
             agent.params = agent.update(grads, agent.params, agent.lr)
 
     episode_loss.append(loss)
@@ -163,7 +154,7 @@ for j in range(episodes_num):
             pickle.dump(agent.params, fp)
         plt.figure()
         plt.plot(episode_loss[1:])
-        plt.savefig('cartpole_svg_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.savefig(('cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
         #for value function loss
         with open("examples/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
@@ -172,20 +163,12 @@ for j in range(episodes_num):
         plt.plot(agent.value_losses)
         plt.savefig(('cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()        
-        #for model loss
-        with open("examples/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
-            pickle.dump(hybrid_env.model_params, fp)
-        plt.figure()
-        plt.plot(hybrid_env.model_losses)
-        plt.savefig(('cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-        plt.close()
-# reward_forloop = reward
-# print('reward_forloop = ' + str(reward_forloop))
-# plt.plot(episode_loss[1:])
-# plt.plot(hybrid_env.model_losses)
-
-#save plot and params
-# plt.savefig('cartpole_svg_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-# plt.savefig('cartpole_svg_model_loss'+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        # #for model loss
+        # with open("examples/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+        #     pickle.dump(hybrid_env.model_params, fp)
+        # plt.figure()
+        # plt.plot(hybrid_env.model_losses)
+        # plt.savefig(('cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        # plt.close()
 
 # fp.close()
