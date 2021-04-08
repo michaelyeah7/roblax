@@ -44,7 +44,7 @@ def roll_out(env, agent, params, T):
 f_grad = jax.value_and_grad(roll_out,argnums=2)
 
 def loss_value(state, next_state, reward, value_params):
-    td = -reward + agent.value(next_state, value_params) - agent.value(state, value_params)
+    td = reward + agent.value(next_state, value_params) - agent.value(state, value_params)
     value_loss = 0.5 * (td ** 2)
     return value_loss
 

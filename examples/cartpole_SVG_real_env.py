@@ -20,22 +20,25 @@ def loop(context, x):
     return (env, agent), reward, done
 
 def roll_out(env, agent, params, T):
+    policy_params, value_params =  params
     gamma = 0.9
-    losses = 0.0
+    total_return = 0.0
     for i in range(5):
-        (env, agent), r, done= loop((env, agent,params), i)
-        losses = losses * gamma + r 
+        (env, agent), r, done= loop((env, agent,policy_params), i)
+        total_return = total_return * gamma + r 
         if done:
             print("end this episode because out of threshhold in policy update")
             env.past_reward = 0
             break
-    losses += agent.value(env.state,agent.value_params) * gamma        
+    total_return += agent.value(env.state,value_params) * gamma 
+    losses = -total_return       
     return losses
 
 f_grad = jax.value_and_grad(roll_out,argnums=2)
+# value_grad = jax.value_and_grad(roll_out,argnums=3)
 
 def loss_value(state, next_state, reward, value_params):
-    td = -reward + agent.value(next_state, value_params) - agent.value(state, value_params)
+    td = reward + agent.value(next_state, value_params) - agent.value(state, value_params)
     value_loss = 0.5 * (td ** 2)
     return value_loss
 
@@ -76,16 +79,16 @@ def loop_for_render(context, x):
 
 def roll_out_for_render(env, hybrid_env, agent, params, T):
     gamma = 0.9
-    losses = 0.0
+    rewards = 0.0
     for i in range(T):
         (env, hybrid_env, agent), r, done= loop_for_render((env, hybrid_env, agent,params), i)
-        losses = losses * gamma + r 
+        rewards = rewards * gamma + r 
         if done:
             print("end this episode because out of threshhold in model update")
             env.past_reward = 0
             break
         
-    return losses
+    return rewards
 
 
 
@@ -116,21 +119,20 @@ if load_params == True:
  # for loop version
 # xs = jnp.array(jnp.arange(T))
 print(env.reset())
-reward = 0
-loss = 0
-episode_loss = []
+rewards = 0
+episode_rewards = []
 # episodes_num = 1000
 episodes_num = 1000
 T = 100
 # T = 1000
 for j in range(episodes_num):
 
-    loss = 0
+    rewards = 0
     env.reset()           
     print("episode:{%d}" % j)
 
     #update hybrid model using real trajectories
-    loss = roll_out_for_render(env, hybrid_env, agent, agent.params, T)
+    rewards = roll_out_for_render(env, hybrid_env, agent, agent.params, T)
     # print("hybrid_env.model_losses",hybrid_env.model_losses)
 
     #update the parameter
@@ -141,19 +143,22 @@ for j in range(episodes_num):
             # hybrid_env.reset() 
 
             #train agent using learned hybrid env
-            total_return, grads = f_grad(env, agent, agent.params, T)
+            total_return, grads = f_grad(env, agent, (agent.params, agent.value_params), T)
+            policy_grads, value_grads = grads
+            # _, value_params_grads = value_grad(env, agent, agent.params, agent.value_params, T)
             # total_return, grads = f_grad(hybrid_env, agent, agent.params,T)
             
-            agent.params = agent.update(grads, agent.params, agent.lr)
+            agent.params = agent.update(policy_grads, agent.params, agent.lr)
+            agent.value_params =  agent.update(value_grads,agent.value_params, agent.lr)
 
-    episode_loss.append(loss)
-    print("loss is %f" % loss)
-    if (j%100==0 and j!=0 and update_params==True):
+    episode_rewards.append(rewards)
+    print("rewards is %f" % rewards)
+    if (j%10==0 and j!=0 and update_params==True):
         #for agent loss
         with open("examples/cartpole_svg_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.params, fp)
         plt.figure()
-        plt.plot(episode_loss[1:])
+        plt.plot(episode_rewards[1:])
         plt.savefig(('cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
         #for value function loss
