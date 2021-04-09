@@ -189,9 +189,10 @@ class Cartpole_rbdl(Env):
         self.dynamics = _dynamics
 
     def reset(self):
-        self.state = jax.random.uniform(
-            self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
-        )
+        # self.state = jax.random.uniform(
+        #     self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
+        # )
+        self.state = jnp.array(list(np.random.uniform(-0.05,0.05,4)))
         return self.state
 
     def step(self, state, action):
@@ -314,9 +315,11 @@ class Cartpole_Hybrid():
         # self.state = jax.random.uniform(
         #     self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
         # )
-        self.state = jax.random.uniform(
-            self.random.get_key(), shape=(4,), minval=-0.209, maxval=0.209
-        )
+        # self.state = jax.random.uniform(
+        #     self.random.get_key(), shape=(4,), minval=-0.209, maxval=0.209
+        # )
+        self.state = jnp.array(list(np.random.uniform(-0.209,0.209,4)))
+        # print("init state", self.state)
         return self.state
 
     def forward(self, state, action, model_params):

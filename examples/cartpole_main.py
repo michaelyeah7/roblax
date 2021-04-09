@@ -60,12 +60,12 @@ for j in range(episodes_num):
     if (update_params==True):
         #update policy using 20 horizon 5 partial trajectories
         for i in range(20):
-            env.reset()
-            # hybrid_env.reset() 
+            # env.reset()
+            hybrid_env.reset() 
 
             #train policy use 5-step partial trajectory and learned value function
-            total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
-            # total_return, grads = f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
+            # total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
+            total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
 
             #get and update policy and value function grads
             policy_grads, value_grads = grads           
