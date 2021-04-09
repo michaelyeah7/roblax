@@ -32,6 +32,10 @@ agent = Deep_Cartpole_rbdl(
 load_params = False
 update_params = False
 
+
+loaded_params = pickle.load( open( "experiments2021-04-09 18:56:36/cartpole_svg_model_params_episode_130_2021-04-09 20:24:08.txt", "rb" ) )
+hybrid_env.model_params = loaded_params
+
 if load_params == True:
     loaded_params = pickle.load( open( "examples/cartpole_svg_params_episode_100_2021-04-05 06:10:53.txt", "rb" ) )
     agent.params = loaded_params
@@ -74,7 +78,7 @@ for j in range(episodes_num):
 
     episode_rewards.append(rewards)
     print("rewards is %f" % rewards)
-    print("hybrid_env.model_losses is %f" % hybrid_env.model_losses[j])
+    # print("hybrid_env.model_losses is %f" % hybrid_env.model_losses[j])
     # if (j%10==0 and j!=0 and update_params==True):
     if (j%10==0 and j!=0):
         #for agent loss
@@ -91,10 +95,10 @@ for j in range(episodes_num):
         plt.plot(agent.value_losses)
         plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()        
-        #for model loss
-        with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
-            pickle.dump(hybrid_env.model_params, fp)
-        plt.figure()
-        plt.plot(hybrid_env.model_losses)
-        plt.savefig((exp_dir + '/cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-        plt.close()
+        # #for model loss
+        # with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+        #     pickle.dump(hybrid_env.model_params, fp)
+        # plt.figure()
+        # plt.plot(hybrid_env.model_losses)
+        # plt.savefig((exp_dir + '/cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        # plt.close()

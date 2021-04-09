@@ -51,11 +51,11 @@ class MBRL():
         agent.value_losses.append(value_loss)
         agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
         
-        #update hybrid model
-        model_loss, model_grads = self.model_loss_grad(prev_state,control,next_state,hybrid_env.model_params, hybrid_env)
-        # print("model_loss",model_loss)
-        hybrid_env.model_losses.append(model_loss)
-        hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
+        # #update hybrid model
+        # model_loss, model_grads = self.model_loss_grad(prev_state,control,next_state,hybrid_env.model_params, hybrid_env)
+        # # print("model_loss",model_loss)
+        # hybrid_env.model_losses.append(model_loss)
+        # hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
 
         return (env, hybrid_env, agent), reward, done
 
