@@ -58,6 +58,7 @@ class Deep_Cartpole_rbdl(Agent):
         self.action_space = action_space
         self.max_episode_length = max_episode_length
         self.lr = learning_rate
+        self.value_lr = 0.01
         self.gamma = gamma
 
         self.random = Random(seed)

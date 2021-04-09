@@ -44,7 +44,7 @@ def roll_out(env, agent, params, T):
 f_grad = jax.value_and_grad(roll_out,argnums=2)
 
 def loss_value(state, next_state, reward, value_params):
-    td = reward + agent.value(next_state, value_params) - agent.value(state, value_params)
+    td = -reward + agent.value(next_state, value_params) - agent.value(state, value_params)
     value_loss = 0.5 * (td ** 2)
     return value_loss
 
@@ -72,7 +72,7 @@ def loop_for_render(context, x):
     #update value function
     value_loss, value_grads =  value_loss_grad(prev_state,next_state,reward,agent.value_params)
     agent.value_losses.append(value_loss)
-    agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
+    agent.value_params = agent.update(value_grads,agent.value_params,agent.value_lr)    
     
     #update hybrid model
     model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)

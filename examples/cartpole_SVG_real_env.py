@@ -9,6 +9,7 @@ import pickle
 from time import gmtime, strftime 
 from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
 import numpy as np
+import os
 
 
 def loop(context, x):
@@ -68,11 +69,11 @@ def loop_for_render(context, x):
     agent.value_losses.append(value_loss)
     agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
     
-    # #update hybrid model
-    # model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
-    # # print("model_loss",model_loss)
-    # hybrid_env.model_losses.append(model_loss)
-    # hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
+    #update hybrid model
+    model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
+    # print("model_loss",model_loss)
+    hybrid_env.model_losses.append(model_loss)
+    hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
 
 
     return (env, hybrid_env, agent), reward, done
@@ -94,7 +95,7 @@ def roll_out_for_render(env, hybrid_env, agent, params, T):
 
 # Deep
 env = Cartpole_rbdl() 
-hybrid_env = Cartpole_Hybrid(model_lr=1e-1)
+hybrid_env = Cartpole_Hybrid(model_lr=5e-1)
 agent = Deep_Cartpole_rbdl(
              env_state_size = 4,
              action_space = jnp.array([0]),
@@ -125,6 +126,8 @@ episode_rewards = []
 episodes_num = 1000
 T = 100
 # T = 1000
+exp_dir = "experiments" + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+os.mkdir(exp_dir)
 for j in range(episodes_num):
 
     rewards = 0
@@ -139,14 +142,14 @@ for j in range(episodes_num):
     if (update_params==True):
         #update policy using 20 horizon 5 partial trajectories
         for i in range(20):
-            env.reset()
-            # hybrid_env.reset() 
+            # env.reset()
+            hybrid_env.reset() 
 
             #train agent using learned hybrid env
-            total_return, grads = f_grad(env, agent, (agent.params, agent.value_params), T)
+            # total_return, grads = f_grad(env, agent, (agent.params, agent.value_params), T)
+            total_return, grads = f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
             policy_grads, value_grads = grads
-            # _, value_params_grads = value_grad(env, agent, agent.params, agent.value_params, T)
-            # total_return, grads = f_grad(hybrid_env, agent, agent.params,T)
+
             
             agent.params = agent.update(policy_grads, agent.params, agent.lr)
             agent.value_params =  agent.update(value_grads,agent.value_params, agent.lr)
@@ -155,25 +158,25 @@ for j in range(episodes_num):
     print("rewards is %f" % rewards)
     if (j%10==0 and j!=0 and update_params==True):
         #for agent loss
-        with open("examples/cartpole_svg_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+        with open(exp_dir + "/cartpole_svg_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.params, fp)
         plt.figure()
         plt.plot(episode_rewards[1:])
-        plt.savefig(('cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.savefig((exp_dir + '/cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
         #for value function loss
-        with open("examples/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+        with open(exp_dir + "/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.value_params, fp)
         plt.figure()
         plt.plot(agent.value_losses)
-        plt.savefig(('cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()        
-        # #for model loss
-        # with open("examples/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
-        #     pickle.dump(hybrid_env.model_params, fp)
-        # plt.figure()
-        # plt.plot(hybrid_env.model_losses)
-        # plt.savefig(('cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-        # plt.close()
+        #for model loss
+        with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+            pickle.dump(hybrid_env.model_params, fp)
+        plt.figure()
+        plt.plot(hybrid_env.model_losses)
+        plt.savefig((exp_dir + '/cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()
 
 # fp.close()

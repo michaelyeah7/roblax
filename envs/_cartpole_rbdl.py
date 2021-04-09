@@ -33,7 +33,7 @@ import pybullet as p
 from numpy import sin, cos
 
 class Cartpole_rbdl(Env):
-    def __init__(self, reward_fn=None, seed=0):
+    def __init__(self, render=False, reward_fn=None, seed=0):
 
         self.gravity = 9.8
         self.masscart = 1.0
@@ -45,6 +45,7 @@ class Cartpole_rbdl(Env):
         self.tau = 0.02  # seconds between state updates
         self.kinematics_integrator = "euler"
         self.viewer = None
+        self.render = render
 
         # Angle at which to fail the episode
         # Angle at which to fail the episode
@@ -324,15 +325,38 @@ class Cartpole_Hybrid():
         #works for RBDL
         # force = action[0] * 100
         
-        q = jnp.array([0,0,x,theta])
-        qdot = jnp.array([0,0,x_dot,theta_dot])
-        torque = jnp.array([0,0,force,0.])
+        # q = jnp.array([0,0,x,theta])
+        # qdot = jnp.array([0,0,x_dot,theta_dot])
+        # torque = jnp.array([0,0,force,0.])
 
-        input = (self.model, q, qdot, torque)
-        accelerations = ForwardDynamics(*input)
-        # print("accelerations",accelerations)
-        xacc = accelerations[2][0]
-        thetaacc = accelerations[3][0]
+        # input = (self.model, q, qdot, torque)
+        # accelerations = ForwardDynamics(*input)
+        # # print("accelerations",accelerations)
+        # xacc = accelerations[2][0]
+        # thetaacc = accelerations[3][0]
+
+        #calculate xacc & thetaacc using PDP
+        # x = 0.04653214
+        dx = x_dot
+        q = theta
+        dq = theta_dot
+        U = force
+
+        #mass of cart and pole
+        mp = 0.1
+        mc = 1.0
+        l = 0.5
+
+        g=9.81
+
+        ddx = (U + mp * jnp.sin(q) * (l * dq * dq + g * jnp.cos(q))) / (
+                mc + mp * jnp.sin(q) * jnp.sin(q))  # acceleration of x
+        ddq = (-U * jnp.cos(q) - mp * l * dq * dq * jnp.sin(q) * jnp.cos(q) - (
+                mc + mp) * g * jnp.sin(
+            q)) / (
+                        l * mc + l * mp * jnp.sin(q) * jnp.sin(q))  # acceleration of theta
+        xacc = ddx
+        thetaacc = ddq
 
         #Integration
         x = x + self.tau * x_dot
