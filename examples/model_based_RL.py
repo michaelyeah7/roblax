@@ -1,12 +1,14 @@
 import jax
+import jax.numpy as jnp
 import copy
 
-class MBAC():
+class MBRL():
     def __init__(self, env, agent):
         self.env = env
         self.agent = agent
         self.f_grad = jax.value_and_grad(self.roll_out,argnums=2)
         self.value_loss_grad = jax.value_and_grad(self.loss_value,argnums=3)
+        self.model_loss_grad = jax.value_and_grad(self.loss_hybrid_model,argnums=3)
 
     def step(self, context, x):
         env, agent, params = context
@@ -49,11 +51,11 @@ class MBAC():
         agent.value_losses.append(value_loss)
         agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
         
-        # #update hybrid model
-        # model_loss, model_grads = model_loss_grad(prev_state,control,next_state,hybrid_env.model_params)
-        # # print("model_loss",model_loss)
-        # hybrid_env.model_losses.append(model_loss)
-        # hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
+        #update hybrid model
+        model_loss, model_grads = self.model_loss_grad(prev_state,control,next_state,hybrid_env.model_params, hybrid_env)
+        # print("model_loss",model_loss)
+        hybrid_env.model_losses.append(model_loss)
+        hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
 
         return (env, hybrid_env, agent), reward, done
 
@@ -69,3 +71,12 @@ class MBAC():
                 break
             
         return rewards
+
+    def loss_hybrid_model(self, prev_state, control, true_next_state, model_params, hybrid_env):
+        next_state = hybrid_env.forward(prev_state, control, model_params)
+        model_loss = jnp.sum((next_state - true_next_state)**2)
+        # model_loss = jnp.linalg.norm(next_state - true_next_state)
+        # print("model loss",model_loss)
+        # print("model_loss.value",model_loss[0])
+        # model_losses.append(model_loss)
+        return model_loss
