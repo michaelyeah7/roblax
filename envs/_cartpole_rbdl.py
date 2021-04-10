@@ -192,7 +192,8 @@ class Cartpole_rbdl(Env):
         # self.state = jax.random.uniform(
         #     self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
         # )
-        self.state = jnp.array(list(np.random.uniform(-0.05,0.05,4)))
+        # self.state = jnp.array(list(np.random.uniform(-0.05,0.05,4)))
+        self.state = jnp.array([0.,0.,3.14,0.])
         return self.state
 
     def step(self, state, action):
@@ -203,9 +204,15 @@ class Cartpole_rbdl(Env):
         # print("x",x)
         # print("type",type(x))
 
+        # done = jax.lax.cond(
+        #     (jnp.abs(x) > jnp.abs(self.x_threshold))
+        #     + (jnp.abs(theta) > jnp.abs(self.theta_threshold_radians)),
+        #     lambda done: True,
+        #     lambda done: False,
+        #     None,
+        # )
         done = jax.lax.cond(
-            (jnp.abs(x) > jnp.abs(self.x_threshold))
-            + (jnp.abs(theta) > jnp.abs(self.theta_threshold_radians)),
+            (jnp.abs(x) > jnp.abs(self.x_threshold)),
             lambda done: True,
             lambda done: False,
             None,

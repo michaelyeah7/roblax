@@ -22,14 +22,14 @@ class MBRL():
         policy_params, value_params =  params
         gamma = 0.9
         total_return = 0.0
-        for i in range(T):
+        for i in range(5):
             (env, agent), r, done= self.step((env, agent,policy_params), i)
             total_return = total_return * gamma + r 
             if done:
                 print("end this episode because out of threshhold in policy update")
                 env.past_reward = 0
                 break
-        # total_return += agent.value(env.state,value_params) * gamma 
+        total_return += agent.value(env.state,value_params) * gamma 
         losses = -total_return       
         return losses
 
@@ -46,10 +46,10 @@ class MBRL():
         prev_state = copy.deepcopy(env.state)
         next_state, reward, done, _ = env.step(env.state,control)
 
-        # #update value function
-        # value_loss, value_grads =  self.value_loss_grad(prev_state,next_state,reward,agent.value_params, agent)
-        # agent.value_losses.append(value_loss)
-        # agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
+        #update value function
+        value_loss, value_grads =  self.value_loss_grad(prev_state,next_state,reward,agent.value_params, agent)
+        agent.value_losses.append(value_loss)
+        agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
         
         # #update hybrid model
         # model_loss, model_grads = self.model_loss_grad(prev_state,control,next_state,hybrid_env.model_params, hybrid_env)
