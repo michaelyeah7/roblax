@@ -58,7 +58,7 @@ class Cartpole_rbdl(Env):
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
         #three dynamic options "RBDL" "Original" "PDP"
-        self.dynamics_option = "RBDL"
+        self.dynamics_option = "PDP"
         # self.model["NB"] = self.model["NB"] + 1 
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
@@ -220,17 +220,17 @@ class Cartpole_rbdl(Env):
         # done = False
 
         # reward = 1 - done
-        reward = self.reward_func(self.state)
+        reward = self.reward_func(self.state,action)
 
         return self.state, reward, done, {}
 
 
-    def reward_func(self,state):
+    def reward_func(self,state,action):
         # x, x_dot, theta, theta_dot = state
         # reward = state[0]**2 + (state[1])**2 + 100*state[2]**2 + state[3]**2 
         # reward = jnp.exp(state[0])-1 + state[2]**2 + state[3]**2 
-        costs = jnp.exp(state[0]**2) + (100*state[2])**2 + state[3]**2 
-        # costs = 0.1 * (state[0]**2) + 0.6 * (state[2]**2) + 0.1 * (state[1]**2) + 0.1 * (state[3]**2)
+        # costs = jnp.exp(state[0]**2) + (100*state[2])**2 + state[3]**2 
+        costs = 0.1 * (state[0]**2) + 0.6 * (state[2]**2) + 0.1 * (state[1]**2) + 0.1 * (state[3]**2) 
         reward = -costs
         return reward
 

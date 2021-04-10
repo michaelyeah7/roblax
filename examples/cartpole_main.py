@@ -58,7 +58,7 @@ for j in range(episodes_num):
     print("episode:{%d}" % j)
 
     #evaluate rewards and update value function
-    rewards = mbrl.roll_out_for_render(env, hybrid_env, agent, agent.params, T)
+    rewards, trajectory_state_buffer = mbrl.roll_out_for_render(env, hybrid_env, agent, agent.params, T)
 
     #update the policy
     if (update_params==True):
@@ -66,6 +66,9 @@ for j in range(episodes_num):
         # for i in range(20):
         env.reset()
         # hybrid_env.reset() 
+
+        random_state_index = np.random.randint(len(trajectory_state_buffer), size=1)[0]
+        env.state =  trajectory_state_buffer[random_state_index]
 
         #train policy use 5-step partial trajectory and learned value function
         total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)

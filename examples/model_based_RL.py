@@ -22,7 +22,7 @@ class MBRL():
         policy_params, value_params =  params
         gamma = 0.9
         total_return = 0.0
-        for i in range(5):
+        for i in range(50):
             (env, agent), r, done= self.step((env, agent,policy_params), i)
             total_return = total_return * gamma + r 
             if done:
@@ -60,17 +60,20 @@ class MBRL():
         return (env, hybrid_env, agent), reward, done
 
     def roll_out_for_render(self, env, hybrid_env, agent, params, T):
+        trajectory_state_buffer = []
+        trajectory_state_buffer.append(env.state)
         gamma = 0.9
         rewards = 0.0
         for i in range(T):
             (env, hybrid_env, agent), r, done= self.step_for_render((env, hybrid_env, agent,params), i)
             rewards = rewards * gamma + r 
+            trajectory_state_buffer.append(env.state)
             if done:
                 print("end this episode because out of threshhold in model update")
                 env.past_reward = 0
                 break
             
-        return rewards
+        return rewards, trajectory_state_buffer
 
     def loss_hybrid_model(self, prev_state, control, true_next_state, model_params, hybrid_env):
         next_state = hybrid_env.forward(prev_state, control, model_params)
