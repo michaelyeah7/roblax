@@ -58,7 +58,7 @@ class Cartpole_rbdl(Env):
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
         #three dynamic options "RBDL" "Original" "PDP"
-        self.dynamics_option = "PDP"
+        self.dynamics_option = "RBDL"
         # self.model["NB"] = self.model["NB"] + 1 
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
@@ -189,10 +189,10 @@ class Cartpole_rbdl(Env):
         self.dynamics = _dynamics
 
     def reset(self):
-        # self.state = jax.random.uniform(
-        #     self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
-        # )
-        self.state = jnp.array(list(np.random.uniform(-0.05,0.05,4)))
+        self.state = jax.random.uniform(
+            self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
+        )
+        # self.state = jnp.array(list(np.random.uniform(-0.05,0.05,4)))
         return self.state
 
     def step(self, state, action):
