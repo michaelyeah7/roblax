@@ -19,7 +19,7 @@ class MBRL():
         return (env, agent), reward, done
 
     def roll_out(self, env, agent, params, T):
-        policy_params, value_params =  params
+        policy_params =  params
         gamma = 0.9
         total_return = 0.0
         for i in range(5):

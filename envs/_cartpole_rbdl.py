@@ -58,7 +58,7 @@ class Cartpole_rbdl(Env):
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
         #three dynamic options "RBDL" "Original" "PDP"
-        self.dynamics_option = "PDP"
+        self.dynamics_option = "RBDL"
         # self.model["NB"] = self.model["NB"] + 1 
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
