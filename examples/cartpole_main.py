@@ -64,15 +64,15 @@ for j in range(episodes_num):
     if (update_params==True):
         #update policy using 20 horizon 5 partial trajectories
         # for i in range(20):
-        env.reset()
-        # hybrid_env.reset() 
+        # env.reset()
+        hybrid_env.reset() 
 
         random_state_index = np.random.randint(len(trajectory_state_buffer), size=1)[0]
         env.state =  trajectory_state_buffer[random_state_index]
 
         #train policy use 5-step partial trajectory and learned value function
-        total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
-        # total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
+        # total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
+        total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
 
         #get and update policy and value function grads
         policy_grads, value_grads = grads 
@@ -100,10 +100,10 @@ for j in range(episodes_num):
         plt.plot(agent.value_losses)
         plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()        
-        # #for model loss
-        # with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
-        #     pickle.dump(hybrid_env.model_params, fp)
-        # plt.figure()
-        # plt.plot(hybrid_env.model_losses)
-        # plt.savefig((exp_dir + '/cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-        # plt.close()
+        #for model loss
+        with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+            pickle.dump(hybrid_env.model_params, fp)
+        plt.figure()
+        plt.plot(hybrid_env.model_losses)
+        plt.savefig((exp_dir + '/cartpole_svg_model_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()
