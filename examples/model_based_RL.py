@@ -1,9 +1,11 @@
 import jax
 import jax.numpy as jnp
 import copy
+import gym
 
 class MBRL():
     def __init__(self, env, agent):
+        self.cartpole_gym_env = gym.make("CartPole-v0")
         self.env = env
         self.agent = agent
         self.f_grad = jax.value_and_grad(self.roll_out,argnums=2)
@@ -15,6 +17,8 @@ class MBRL():
         control = agent(env.state, params)
         prev_state = copy.deepcopy(env.state)
         _, reward, done, _ = env.step(env.state,control)
+        # next_state, reward, done, _ = self.cartpole_gym_env(control)
+        # env.state =  next_state
 
         return (env, agent), reward, done
 
@@ -51,11 +55,11 @@ class MBRL():
         agent.value_losses.append(value_loss)
         agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)    
         
-        #update hybrid model
-        model_loss, model_grads = self.model_loss_grad(prev_state,control,next_state,hybrid_env.model_params, hybrid_env)
-        # print("model_loss",model_loss)
-        hybrid_env.model_losses.append(model_loss)
-        hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
+        # #update hybrid model
+        # model_loss, model_grads = self.model_loss_grad(prev_state,control,next_state,hybrid_env.model_params, hybrid_env)
+        # # print("model_loss",model_loss)
+        # hybrid_env.model_losses.append(model_loss)
+        # hybrid_env.model_params = agent.update(model_grads,hybrid_env.model_params,hybrid_env.model_lr)
 
         return (env, hybrid_env, agent), reward, done
 
