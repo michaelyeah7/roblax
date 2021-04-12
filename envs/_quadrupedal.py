@@ -99,8 +99,16 @@ class Qaudrupedal(Env):
             T = self.dt
             contact_force = dict()
 
+            model["contact_cond"] = contact_cond
+
             # Calculate contact force in joint space
-            flag_contact = DetectContact(model, q, qdot, contact_cond)
+            # flag_contact = DetectContact(model, q, qdot, contact_cond)
+            flag_contact_tuple = DetectContact(model, q, qdot)
+            flag_contact_list = []
+            flag_contact_list.append(flag_contact_tuple)
+            print("flag_contact_list",flag_contact_list)
+            flag_contact = jnp.array(flag_contact_list).flatten()
+            print("flag_contact",flag_contact)
             # print("In Dynamics!!!")
             # print(flag_contact)
             if jnp.sum(flag_contact) !=0: 
