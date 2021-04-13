@@ -13,6 +13,7 @@ from jaxRBDL.Dynamics.InverseDynamics import InverseDynamics
 from jax.numpy.linalg import inv
 from jaxRBDL.Contact.DetectContact import DetectContact
 from jaxRBDL.Contact.CalcContactForceDirect import CalcContactForceDirect
+from jaxRBDL.Contact.SolveContactLCP import SolveContactLCP
 # from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics
 from jaxRBDL.Kinematics.CalcBodyToBaseCoordinates import CalcBodyToBaseCoordinates
 
@@ -113,7 +114,8 @@ class Qaudrupedal(Env):
             # print(flag_contact)
             if jnp.sum(flag_contact) !=0: 
                 # lambda, fqp, fpd] = SolveContactLCP(q, qdot, tau, flag_contact);
-                lam, fqp, fc, fcqp, fcpd = CalcContactForceDirect(_model, q, qdot, tau, flag_contact, 2)
+                # lam, fqp, fc, fcqp, fcpd = CalcContactForceDirect(_model, q, qdot, tau, flag_contact, 2)
+                lam, fqp, fc, fcqp, fcpd = SolveContactLCP(_model, q, qdot, tau, flag_contact,0.1)
                 contact_force["fc"] = fc
                 contact_force["fcqp"] = fcqp
                 contact_force["fcpd"] = fcpd
