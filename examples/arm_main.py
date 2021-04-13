@@ -34,7 +34,7 @@ render = True
 # render = False
 
 if load_params == True:
-    loaded_params = pickle.load( open( "examples/arm_rbdl_params_episode_20_2021-03-20 18:19:28.txt", "rb" ) )
+    loaded_params = pickle.load( open( "experiments2021-04-12 22:14:59/cartpole_svg_params_episode_10_2021-04-12 22:22:35.txt", "rb" ) )
     agent.params = loaded_params
 
 #init learner
@@ -68,6 +68,7 @@ for j in range(episodes_num):
         env.state =  trajectory_state_buffer[random_state_index]
 
         #train policy use 5-step partial trajectory and learned value function
+        # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)
         total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
         # total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
 
@@ -90,13 +91,13 @@ for j in range(episodes_num):
         plt.plot(episode_rewards[1:])
         plt.savefig((exp_dir + '/cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
-        #for value function loss
-        with open(exp_dir + "/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
-            pickle.dump(agent.value_params, fp)
-        plt.figure()
-        plt.plot(agent.value_losses)
-        plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-        plt.close()        
+        # #for value function loss
+        # with open(exp_dir + "/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+        #     pickle.dump(agent.value_params, fp)
+        # plt.figure()
+        # plt.plot(agent.value_losses)
+        # plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        # plt.close()        
         # #for model loss
         # with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
         #     pickle.dump(hybrid_env.model_params, fp)

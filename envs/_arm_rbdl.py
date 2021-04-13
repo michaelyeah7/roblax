@@ -82,6 +82,7 @@ class Arm_rbdl(Env):
         def _dynamics(state, action):
             q, qdot = state
             torque = action/10
+            # torque = action * 100
             # torque = jnp.array(action)
             # print("q",q)
             # print("qdot",qdot)
@@ -149,9 +150,10 @@ class Arm_rbdl(Env):
         # print("q in reward",q)
         # print("qdot in reward", qdot)
         # reward = jnp.log(jnp.sum(jnp.square(q - self.target))) + jnp.log(jnp.sum(jnp.square(qdot - self.qdot_target))) 
-        reward = jnp.log(jnp.sum(jnp.square(q - self.target))) 
+        costs = jnp.log(jnp.sum(jnp.square(q - self.target))) 
         # reward = jnp.log((q[5]-1.57)**2) + jnp.log(jnp.sum(jnp.square(qdot - self.qdot_target)))
         # reward = jnp.linalg.norm(jnp.square(q - self.target)) + jnp.linalg.norm(jnp.square(qdot - self.qdot_target))
+        reward = -costs
 
         return reward
 
