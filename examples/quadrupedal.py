@@ -1,7 +1,7 @@
-from jaxRBDL.Utils.UrdfWrapper import UrdfWrapper
+from Simulator.UrdfWrapper import UrdfWrapper
 # from jaxRBDL.Utils.UrdfWrapper_guo import UrdfWrapper
-from jaxRBDL.Simulator.ObdlRender import ObdlRender
-from jaxRBDL.Simulator.ObdlSim import ObdlSim
+from Simulator.ObdlRender import ObdlRender
+from Simulator.ObdlSim import ObdlSim
 import time
 import numpy as np
 import pybullet as p
@@ -243,5 +243,10 @@ if __name__ == "__main__":
     # laikago_trajectory()
 #     target_pos()
     # test_gradient()
-    contact_example()
+    # contact_example()
+    a = (1,2,3)
+    b = []
+    b.append(a)
+    c = jnp.array(b).flatten()
+    print("c",c)
 
