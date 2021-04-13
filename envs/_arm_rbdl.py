@@ -58,7 +58,7 @@ class Arm_rbdl(Env):
         At least one angle is larger than 45 degrees.
     """
 
-    def __init__(self, reward_fn=None, seed=0):
+    def __init__(self, reward_fn=None, seed=0, render=False):
         self.tau = 0.01  # seconds between state updates
         self.kinematics_integrator = "euler"
         self.viewer = None
@@ -75,6 +75,7 @@ class Arm_rbdl(Env):
         self.model = UrdfWrapper("urdf/arm.urdf").model
         # self.model = UrdfWrapper("urdf/two_link_arm.urdf").model
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
+        self.render = render
         
         self.reset()
 

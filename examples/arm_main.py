@@ -13,8 +13,13 @@ from model_based_RL import MBRL
 import os
 
 
+
+load_params = False
+update_params = True
+render = True
+
 # Deep
-env = Arm_rbdl()
+env = Arm_rbdl(render=render)
 hybrid_env = None
 agent = Deep_Arm_rbdl(
              env_state_size = 14,
@@ -25,9 +30,7 @@ agent = Deep_Arm_rbdl(
              seed = 0
             )
 
-load_params = False
-update_params = True
-render = True
+
 
 # load_params = False
 # update_params = True
@@ -91,13 +94,13 @@ for j in range(episodes_num):
         plt.plot(episode_rewards[1:])
         plt.savefig((exp_dir + '/cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
-        # #for value function loss
-        # with open(exp_dir + "/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
-        #     pickle.dump(agent.value_params, fp)
-        # plt.figure()
-        # plt.plot(agent.value_losses)
-        # plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
-        # plt.close()        
+        #for value function loss
+        with open(exp_dir + "/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+            pickle.dump(agent.value_params, fp)
+        plt.figure()
+        plt.plot(agent.value_losses)
+        plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()        
         # #for model loss
         # with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
         #     pickle.dump(hybrid_env.model_params, fp)

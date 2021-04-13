@@ -27,8 +27,8 @@ class MBRL():
         # policy_params =  params
         gamma = 0.9
         total_return = 0.0
-        # for i in range(50):
-        for i in range(T):
+        for i in range(50):
+        # for i in range(T):
             (env, agent), r, done= self.step((env, agent,policy_params), i)
             total_return = total_return * gamma + r 
             if done:
