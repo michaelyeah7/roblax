@@ -327,7 +327,8 @@ class Cartpole_Hybrid():
         # self.state = jax.random.uniform(
         #     self.random.get_key(), shape=(4,), minval=-0.209, maxval=0.209
         # )
-        self.state = jnp.array(list(np.random.uniform(-0.209,0.209,4)))
+        # self.state = jnp.array(list(np.random.uniform(-0.209,0.209,4)))
+        self.state = jnp.array([0.,0.,3.14,0.])
         # print("init state", self.state)
         return self.state
 

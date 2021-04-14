@@ -1,9 +1,11 @@
 import jax
 import jax.numpy as jnp
 import copy
+import gym
 
 class MBRL():
     def __init__(self, env, agent):
+        self.cartpole_gym_env = gym.make("CartPole-v0")
         self.env = env
         self.agent = agent
         self.f_grad = jax.value_and_grad(self.roll_out,argnums=2)
@@ -15,6 +17,8 @@ class MBRL():
         control = agent(env.state, params)
         prev_state = copy.deepcopy(env.state)
         _, reward, done, _ = env.step(env.state,control)
+        # next_state, reward, done, _ = self.cartpole_gym_env(control)
+        # env.state =  next_state
 
         return (env, agent), reward, done
 
@@ -24,13 +28,14 @@ class MBRL():
         gamma = 0.9
         total_return = 0.0
         for i in range(50):
+        # for i in range(T):
             (env, agent), r, done= self.step((env, agent,policy_params), i)
             total_return = total_return * gamma + r 
             if done:
                 print("end this episode because out of threshhold in policy update")
                 env.past_reward = 0
                 break
-        total_return += agent.value(env.state,value_params) * gamma 
+        # total_return += agent.value(env.state,value_params) * gamma 
         losses = -total_return       
         return losses
 

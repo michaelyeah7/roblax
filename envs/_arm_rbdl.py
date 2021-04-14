@@ -58,7 +58,7 @@ class Arm_rbdl(Env):
         At least one angle is larger than 45 degrees.
     """
 
-    def __init__(self, reward_fn=None, seed=0):
+    def __init__(self, reward_fn=None, seed=0, render=False):
         self.tau = 0.01  # seconds between state updates
         self.kinematics_integrator = "euler"
         self.viewer = None
@@ -75,6 +75,7 @@ class Arm_rbdl(Env):
         self.model = UrdfWrapper("urdf/arm.urdf").model
         # self.model = UrdfWrapper("urdf/two_link_arm.urdf").model
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
+        self.render = render
         
         self.reset()
 
@@ -82,6 +83,7 @@ class Arm_rbdl(Env):
         def _dynamics(state, action):
             q, qdot = state
             torque = action/10
+            # torque = action * 100
             # torque = jnp.array(action)
             # print("q",q)
             # print("qdot",qdot)
@@ -149,9 +151,10 @@ class Arm_rbdl(Env):
         # print("q in reward",q)
         # print("qdot in reward", qdot)
         # reward = jnp.log(jnp.sum(jnp.square(q - self.target))) + jnp.log(jnp.sum(jnp.square(qdot - self.qdot_target))) 
-        reward = jnp.log(jnp.sum(jnp.square(q - self.target))) 
+        costs = jnp.log(jnp.sum(jnp.square(q - self.target))) 
         # reward = jnp.log((q[5]-1.57)**2) + jnp.log(jnp.sum(jnp.square(qdot - self.qdot_target)))
         # reward = jnp.linalg.norm(jnp.square(q - self.target)) + jnp.linalg.norm(jnp.square(qdot - self.qdot_target))
+        reward = -costs
 
         return reward
 
