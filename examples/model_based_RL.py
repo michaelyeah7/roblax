@@ -20,6 +20,7 @@ class MBRL():
 
     def roll_out(self, env, agent, params, T):
         policy_params, value_params =  params
+        # policy_params =  params
         gamma = 0.9
         total_return = 0.0
         for i in range(50):
@@ -34,7 +35,8 @@ class MBRL():
         return losses
 
     def loss_value(self, state, next_state, reward, value_params, agent):
-        td = reward + agent.value(next_state, value_params) - agent.value(state, value_params)
+        gamma = 0.9
+        td = reward + gamma * agent.value(next_state, value_params) - agent.value(state, value_params)
         value_loss = 0.5 * (td ** 2)
         return value_loss
 

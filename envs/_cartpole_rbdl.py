@@ -50,7 +50,8 @@ class Cartpole_rbdl(Env):
         # Angle at which to fail the episode
         # Angle at which to fail the episode
         self.theta_threshold_radians = 12 * 2 * math.pi / 360
-        self.x_threshold = 2.4
+        # self.x_threshold = 2.4
+        self.x_threshold = 6.0
 
         self.random = Random(seed)
 
@@ -58,7 +59,7 @@ class Cartpole_rbdl(Env):
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
         #three dynamic options "RBDL" "Original" "PDP"
-        self.dynamics_option = "PDP"
+        self.dynamics_option = "Original"
         # self.model["NB"] = self.model["NB"] + 1 
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
@@ -113,7 +114,8 @@ class Cartpole_rbdl(Env):
             #works for RBDL
             # force = action[0] * 100
             #works for hybrid env
-            force = action[0]
+            # force = action[0]
+            force = action[0] * 100
             # print("fr",action)
             # print("force",force)
             if (self.dynamics_option == "Original"):

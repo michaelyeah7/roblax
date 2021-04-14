@@ -82,11 +82,13 @@ class Deep_Cartpole_rbdl(Agent):
             return [(scale * rng.randn(m, n), scale * rng.randn(n))
                 for m, n, in zip(layer_sizes[:-1], layer_sizes[1:])]
 
-        actor_layer_sizes = [4, 32, 32, len(self.action_space)]
+        # actor_layer_sizes = [4, 32, 32, len(self.action_space)]
+        actor_layer_sizes = [4, 512, 128, len(self.action_space)]
         param_scale = 0.1
         self.params = init_random_params(param_scale, actor_layer_sizes)
         #critic weights
-        critic_layer_sizes = [4, 32, 32, 1]
+        # critic_layer_sizes = [4, 32, 32, 1]
+        critic_layer_sizes = [4, 512, 128, 1]
         self.value_params =  init_random_params(param_scale, critic_layer_sizes)
 
         self.W = jax.random.uniform(

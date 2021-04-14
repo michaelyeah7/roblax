@@ -37,7 +37,7 @@ update_params = True
 # hybrid_env.model_params = loaded_params
 
 if load_params == True:
-    loaded_params = pickle.load( open( "examples/cartpole_svg_params_episode_100_2021-04-05 06:10:53.txt", "rb" ) )
+    loaded_params = pickle.load( open( "experiments2021-04-12 20:42:23/cartpole_svg_value_params_episode_900_2021-04-13 13:51:06.txt", "rb" ) )
     agent.params = loaded_params
 
 #init learner
@@ -45,7 +45,7 @@ mbrl = MBRL(env, agent)
 
 episode_rewards = []
 episodes_num = 1000
-T = 100
+T = 500
 exp_dir = "experiments" + strftime("%Y-%m-%d %H:%M:%S", gmtime())
 os.mkdir(exp_dir)
 
