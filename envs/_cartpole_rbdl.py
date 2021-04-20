@@ -195,7 +195,7 @@ class Cartpole_rbdl(Env):
         #     self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
         # )
         # self.state = jnp.array(list(np.random.uniform(-0.05,0.05,4)))
-        self.state = jnp.array([0.,0.,3.14,0.])
+        self.state = jnp.array([0.,0.,jnp.pi,0.])
         return self.state
 
     def step(self, state, action):
@@ -232,6 +232,7 @@ class Cartpole_rbdl(Env):
         # reward = state[0]**2 + (state[1])**2 + 100*state[2]**2 + state[3]**2 
         # reward = jnp.exp(state[0])-1 + state[2]**2 + state[3]**2 
         # costs = jnp.exp(state[0]**2) + (100*state[2])**2 + state[3]**2 
+        normalized_theta = state[2] % jnp.pi
         costs = (state[0]**2) + 100 * (state[2]**2) + state[3]**2 
         # costs = 0.1 * (state[0]**2) + 0.6 * (state[2]**2) + 0.1 * (state[1]**2) + 0.1 * (state[3]**2) 
         reward = -costs + 100
