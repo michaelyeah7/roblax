@@ -66,6 +66,7 @@ class Deep_Cartpole_rbdl(Agent):
         self.d_a_d_w = jax.grad(self.__call__,argnums=1)
         self.reset()
         self.value_losses = []
+        self.h_t = jnp.zeros(4)
 
     def reset(self) -> None:
         """
@@ -83,13 +84,17 @@ class Deep_Cartpole_rbdl(Agent):
                 for m, n, in zip(layer_sizes[:-1], layer_sizes[1:])]
 
         # actor_layer_sizes = [4, 32, 32, len(self.action_space)]
-        actor_layer_sizes = [4, 512, 128, len(self.action_space)]
+        # actor_layer_sizes = [4, 512, 128, len(self.action_space)]
+        actor_layer_sizes = [8, 512, 128, len(self.action_space)]
         param_scale = 0.1
         self.params = init_random_params(param_scale, actor_layer_sizes)
         #critic weights
         # critic_layer_sizes = [4, 32, 32, 1]
         critic_layer_sizes = [4, 512, 128, 1]
         self.value_params =  init_random_params(param_scale, critic_layer_sizes)
+        #rnn weights
+        rnn_layer_sizes = [8, 32, 32, 4]
+        self.rnn_params = init_random_params(param_scale, rnn_layer_sizes)
 
         self.W = jax.random.uniform(
             self.random.generate_key(),
@@ -148,6 +153,18 @@ class Deep_Cartpole_rbdl(Agent):
         logits = jnp.dot(activations, final_w) + final_b
         return logits[0]
 
+    def rnn(self, state, params):
+        """
+        encode previous states
+        """
+        activations = state
+        for w, b in params[:-1]:
+            outputs = jnp.dot(activations, w) + b
+            activations = jnp.tanh(outputs)
+        final_w, final_b = params[-1]
+        logits = jnp.dot(activations, final_w) + final_b
+        return logits        
+
     def softmax_grad(self, softmax: jnp.ndarray) -> jnp.ndarray:
         """
         Description: Vectorized softmax Jacobian
@@ -168,11 +185,19 @@ class Deep_Cartpole_rbdl(Agent):
         Returns:
             jnp.ndarray: action to take
         """
+        policy_params, rnn_params = params
         # print("state",state)
         # print("W",self.W)
-        self.state = state
-        # self.probs = self.policy(state, params)  
-        self.action = self.policy(state, params)         
+        prev_state = self.state
+        h_t_minus =  self.h_t
+        concatenate_h_t = jnp.hstack((prev_state, h_t_minus))
+        h_t = self.rnn(concatenate_h_t, rnn_params)
+        self.h_t = h_t
+        concatenate_state = jnp.hstack((state, h_t))
+                
+        # self.action = self.policy(state, params) 
+        self.action = self.policy(concatenate_state, policy_params)    
+        self.state = state        
         # self.action = jax.random.choice(
         #     self.random.generate_key(), 
         #     a=self.action_space, 

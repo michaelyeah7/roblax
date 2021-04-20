@@ -232,8 +232,9 @@ class Cartpole_rbdl(Env):
         # reward = state[0]**2 + (state[1])**2 + 100*state[2]**2 + state[3]**2 
         # reward = jnp.exp(state[0])-1 + state[2]**2 + state[3]**2 
         # costs = jnp.exp(state[0]**2) + (100*state[2])**2 + state[3]**2 
-        costs = 0.1 * (state[0]**2) + 0.6 * (state[2]**2) + 0.1 * (state[1]**2) + 0.1 * (state[3]**2) 
-        reward = -costs
+        costs = (state[0]**2) + 100 * (state[2]**2) + state[3]**2 
+        # costs = 0.1 * (state[0]**2) + 0.6 * (state[2]**2) + 0.1 * (state[1]**2) + 0.1 * (state[3]**2) 
+        reward = -costs + 100
         return reward
 
 
@@ -299,6 +300,7 @@ class Cartpole_rbdl(Env):
         # p.stepSimulation()
 
         # x, x_dot, theta, theta_dot = state
+        # print("self.state",self.state)
         q = [0,0,self.state[0],self.state[2]]
         self.osim.step_theta(q)
 
