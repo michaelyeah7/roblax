@@ -45,7 +45,7 @@ mbrl = MBRL(env, agent)
 
 episode_rewards = []
 episodes_num = 1000
-T = 500
+T = 200
 exp_dir = "experiments" + strftime("%Y-%m-%d %H:%M:%S", gmtime())
 os.mkdir(exp_dir)
 
@@ -94,12 +94,15 @@ for j in range(episodes_num):
     # if (j%10==0 and j!=0 and update_params==True):
     if (j%10==0 and j!=0):
         #for agent loss
-        with open(exp_dir + "/cartpole_svg_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
+        with open(exp_dir + "/cartpole_svg_params"+ "_episode_%d_" % j +".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.params, fp)
+        with open(exp_dir + "/cartpole_rnn_params"+ "_episode_%d_" % j  +".txt", "wb") as fp:   #Pickling
+            pickle.dump(agent.rnn_params, fp)
         plt.figure()
         plt.plot(episode_rewards[1:])
         plt.savefig((exp_dir + '/cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
+
         # #for value function loss
         # with open(exp_dir + "/cartpole_svg_value_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
         #     pickle.dump(agent.value_params, fp)

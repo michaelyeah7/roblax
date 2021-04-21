@@ -159,6 +159,7 @@ class Cartpole_rbdl(Env):
 
             if (self.dynamics_option == "RBDL"):
                 #calculate xacc & thetaacc using jaxRBDL
+                force = force/100
                 q = jnp.array([0,0,x,theta])
                 qdot = jnp.array([0,0,x_dot,theta_dot])
                 torque = jnp.array([0,0,force,0.])
@@ -168,8 +169,10 @@ class Cartpole_rbdl(Env):
                 input = (self.model, q, qdot, torque)
                 accelerations = ForwardDynamics(*input)
                 # print("accelerations",accelerations)
-                xacc = accelerations[2][0]
-                thetaacc = accelerations[3][0]
+                # xacc = accelerations[2][0]
+                # thetaacc = accelerations[3][0]
+                xacc = accelerations[2]
+                thetaacc = accelerations[3]           
                 # print("xacc",xacc)
                 # print("thetaacc",thetaacc)
 
