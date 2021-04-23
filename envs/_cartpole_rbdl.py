@@ -33,19 +33,46 @@ import pybullet as p
 from numpy import sin, cos
 
 class Cartpole_rbdl(Env):
-    def __init__(self, render=False, reward_fn=None, seed=0):
+    def __init__(self, render_flag=False, reward_fn=None, seed=0):
 
-        self.gravity = 9.8
-        self.masscart = 1.0
-        self.masspole = 0.1
+        # self.gravity = 9.8
+        # self.masscart = 1.0
+        # self.masspole = 0.1
+        # self.total_mass = self.masspole + self.masscart
+        # self.length = 0.5  # actually half the pole's length
+        # self.polemass_length = self.masspole * self.length
+        # self.force_mag = 10.0
+        # self.tau = 0.02  # seconds between state updates
+        # self.kinematics_integrator = "euler"
+        # self.viewer = None
+        # self.render_flag = render_flag
+
+        self.gravity = 9.82
+        self.masscart = 0.5
+        self.masspole = 0.5
         self.total_mass = self.masspole + self.masscart
-        self.length = 0.5  # actually half the pole's length
+        self.length = 0.6  # actually half the pole's length
         self.polemass_length = self.masspole * self.length
         self.force_mag = 10.0
-        self.tau = 0.02  # seconds between state updates
+        self.tau = 0.01 # seconds between state updates
         self.kinematics_integrator = "euler"
         self.viewer = None
-        self.render = render
+        self.render_flag = render_flag
+
+
+
+        self.g = 9.82  # gravity
+        self.m_c = 0.5  # cart mass
+        self.m_p = 0.5  # pendulum mass
+        self.total_m = (self.m_p + self.m_c)
+        self.l = 0.6  # pole's length
+        # self.l = 1.2  # pole's length
+        self.m_p_l = (self.m_p * self.l)
+        self.force_mag = 10.0
+        self.dt = 0.01  # seconds between state updates
+        self.b = 0.1  # friction coefficient
+
+
 
         # Angle at which to fail the episode
         # Angle at which to fail the episode
@@ -56,10 +83,10 @@ class Cartpole_rbdl(Env):
         self.random = Random(seed)
 
         self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model
-        self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
+        # self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
-        #three dynamic options "RBDL" "Original" "PDP"
-        self.dynamics_option = "Original"
+        #three dynamic options "RBDL" "Original" "PDP" "DDPG"
+        self.dynamics_option = "DDPG"
         # self.model["NB"] = self.model["NB"] + 1 
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
@@ -100,6 +127,8 @@ class Cartpole_rbdl(Env):
 
         # @jax.jit
         def _dynamics(state, action):
+            # print("state",state)
+            # print("action",action)
             x, x_dot, theta, theta_dot = state
 
             # force = jax.lax.cond(action == 1, lambda x: x, lambda x: -x, self.force_mag)
@@ -114,8 +143,8 @@ class Cartpole_rbdl(Env):
             #works for RBDL
             # force = action[0] * 100
             #works for hybrid env
-            # force = action[0]
-            force = action[0] * 100
+            force = action[0]
+            # force = action[0] * 100
             # print("fr",action)
             # print("force",force)
             if (self.dynamics_option == "Original"):
@@ -137,7 +166,7 @@ class Cartpole_rbdl(Env):
                 #calculate xacc & thetaacc using PDP
                 # x = 0.04653214
                 dx = x_dot
-                q = theta
+                q = theta + jnp.pi
                 dq = theta_dot
                 U = force
 
@@ -177,6 +206,24 @@ class Cartpole_rbdl(Env):
                 # print("thetaacc",thetaacc)
 
 
+            if (self.dynamics_option == "DDPG"):
+                action = action
+                s = jnp.sin(theta)
+                c = jnp.cos(theta)
+
+                xdot_update_ddpg = (-2 * self.m_p_l * (
+                        theta_dot ** 2) * s + 3 * self.m_p * self.g * s * c + 4 * action - 4 * self.b * x_dot) / (
+                                    4 * self.total_m - 3 * self.m_p * c ** 2)
+                thetadot_update_ddpg = (-3 * self.m_p_l * (theta_dot ** 2) * s * c + 6 * self.total_m * self.g * s + 6 * (
+                        action - self.b * x_dot) * c) / (4 * self.l * self.total_m - 3 * self.m_p_l * c ** 2)
+
+                # print(colored("xdot_update_ddpg",'green'),xdot_update_ddpg)
+                # print(colored("thetadot_update_ddpg",'green'),thetadot_update_ddpg)
+                xacc = xdot_update_ddpg[0]
+                thetaacc = thetadot_update_ddpg[0]
+
+
+
 
             if self.kinematics_integrator == "euler":
                 x = x + self.tau * x_dot
@@ -198,7 +245,8 @@ class Cartpole_rbdl(Env):
         #     self.random.get_key(), shape=(4,), minval=-0.05, maxval=0.05
         # )
         # self.state = jnp.array(list(np.random.uniform(-0.05,0.05,4)))
-        self.state = jnp.array([0.,0.,jnp.pi,0.])
+        # self.state = jnp.array([0.,0.,jnp.pi,0.])
+        self.state = jnp.array([0.,0.,0.1,0.])
         return self.state
 
     def step(self, state, action):
@@ -231,14 +279,26 @@ class Cartpole_rbdl(Env):
 
 
     def reward_func(self,state,action):
-        # x, x_dot, theta, theta_dot = state
+        x, x_dot, theta, theta_dot = state
         # reward = state[0]**2 + (state[1])**2 + 100*state[2]**2 + state[3]**2 
         # reward = jnp.exp(state[0])-1 + state[2]**2 + state[3]**2 
         # costs = jnp.exp(state[0]**2) + (100*state[2])**2 + state[3]**2 
-        normalized_theta = state[2] % jnp.pi
-        costs = (state[0]**2) + 100 * (state[2]**2) + state[3]**2 
+        # normalized_theta = state[2] % jnp.pi
+        # costs = (state[0]**2) + 100 * (state[2]**2) + state[3]**2 
         # costs = 0.1 * (state[0]**2) + 0.6 * (state[2]**2) + 0.1 * (state[1]**2) + 0.1 * (state[3]**2) 
-        reward = -costs + 100
+        # reward = -costs 
+
+        # reward function as described in dissertation of Deisenroth with A=1
+        A = 1
+        invT = A * jnp.array([[1, self.l, 0], [self.l, self.l ** 2, 0], [0, 0, self.l ** 2]])
+        j = jnp.array([x, jnp.sin(theta), jnp.cos(theta)])
+        j_target = np.array([0.0, 0.0, 1.0])
+
+        reward = jnp.matmul((j - j_target), invT)
+        reward = jnp.matmul(reward, (j - j_target))
+        reward = -(1 - jnp.exp(-0.5 * reward))
+
+
         return reward
 
 
@@ -296,6 +356,90 @@ class Cartpole_rbdl(Env):
         self.poletrans.set_rotation(-x[2])
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
+
+
+    def ddpg_render(self, mode='human', close=False):
+        if close:
+            if self.viewer is not None:
+                self.viewer.close()
+                self.viewer = None
+            return
+
+        screen_width = 600
+        screen_height = 600
+
+        world_width = 5
+        scale = screen_width / world_width
+        carty = screen_height / 2
+        polewidth = 6.0
+        polelen = scale * self.l
+        cartwidth = 40.0
+        cartheight = 20.0
+
+        if self.viewer is None:
+            from gym.envs.classic_control import rendering
+            self.viewer = rendering.Viewer(screen_width, screen_height)
+
+            l, r, t, b = -cartwidth / 2, cartwidth / 2, cartheight / 2, -cartheight / 2
+
+            cart = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
+            self.carttrans = rendering.Transform()
+            cart.add_attr(self.carttrans)
+            cart.set_color(1, 0, 0)
+            self.viewer.add_geom(cart)
+
+            l, r, t, b = -polewidth / 2, polewidth / 2, polelen - polewidth / 2, -polewidth / 2
+            pole = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
+            pole.set_color(0, 0, 1)
+            self.poletrans = rendering.Transform(translation=(0, 0))
+            pole.add_attr(self.poletrans)
+            pole.add_attr(self.carttrans)
+            self.viewer.add_geom(pole)
+
+            self.axle = rendering.make_circle(polewidth / 2)
+            self.axle.add_attr(self.poletrans)
+            self.axle.add_attr(self.carttrans)
+            self.axle.set_color(0.1, 1, 1)
+            self.viewer.add_geom(self.axle)
+
+            self.pole_bob = rendering.make_circle(polewidth / 2)
+            self.pole_bob_trans = rendering.Transform()
+            self.pole_bob.add_attr(self.pole_bob_trans)
+            self.pole_bob.add_attr(self.poletrans)
+            self.pole_bob.add_attr(self.carttrans)
+            self.pole_bob.set_color(0, 0, 0)
+            self.viewer.add_geom(self.pole_bob)
+
+            self.wheel_l = rendering.make_circle(cartheight / 4)
+            self.wheel_r = rendering.make_circle(cartheight / 4)
+            self.wheeltrans_l = rendering.Transform(translation=(-cartwidth / 2, -cartheight / 2))
+            self.wheeltrans_r = rendering.Transform(translation=(cartwidth / 2, -cartheight / 2))
+            self.wheel_l.add_attr(self.wheeltrans_l)
+            self.wheel_l.add_attr(self.carttrans)
+            self.wheel_r.add_attr(self.wheeltrans_r)
+            self.wheel_r.add_attr(self.carttrans)
+            self.wheel_l.set_color(0, 0, 0)
+            self.wheel_r.set_color(0, 0, 0)
+            self.viewer.add_geom(self.wheel_l)
+            self.viewer.add_geom(self.wheel_r)
+
+            self.track = rendering.Line(
+                (screen_width / 2 - self.x_threshold * scale, carty - cartheight / 2 - cartheight / 4),
+                (screen_width / 2 + self.x_threshold * scale, carty - cartheight / 2 - cartheight / 4))
+            self.track.set_color(0, 0, 0)
+            self.viewer.add_geom(self.track)
+
+        if self.state is None: return None
+
+        x = self.state
+        cartx = x[0] * scale + screen_width / 2.0
+        self.carttrans.set_translation(cartx, carty)
+        self.poletrans.set_rotation(x[2])
+        self.pole_bob_trans.set_translation(-self.l * np.sin(x[2]), self.l * np.cos(x[2]))
+
+        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+
+
 
     def osim_render(self):
         # # q=[0,self.state[0],self.state[1]]

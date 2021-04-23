@@ -84,8 +84,8 @@ class Deep_Cartpole_rbdl(Agent):
                 for m, n, in zip(layer_sizes[:-1], layer_sizes[1:])]
 
         # actor_layer_sizes = [4, 32, 32, len(self.action_space)]
-        # actor_layer_sizes = [4, 512, 128, len(self.action_space)]
-        actor_layer_sizes = [8, 512, 128, len(self.action_space)]
+        actor_layer_sizes = [4, 512, 128, 2 * len(self.action_space)]
+        # actor_layer_sizes = [8, 512, 128, len(self.action_space)]
         param_scale = 0.1
         self.params = init_random_params(param_scale, actor_layer_sizes)
         #critic weights
@@ -139,7 +139,9 @@ class Deep_Cartpole_rbdl(Agent):
         # exp = jnp.exp(z)
         # exp = jnp.exp(logits)
         # return exp / jnp.sum(exp)
-        return logits
+        mu, sigma = jnp.split(logits, 2)
+        # return logits
+        return mu, sigma
 
     def value(self, state, params):
         """
@@ -185,18 +187,19 @@ class Deep_Cartpole_rbdl(Agent):
         Returns:
             jnp.ndarray: action to take
         """
-        policy_params, rnn_params = params
-        # print("state",state)
-        # print("W",self.W)
-        prev_state = self.state
-        h_t_minus =  self.h_t
-        concatenate_h_t = jnp.hstack((prev_state, h_t_minus))
-        h_t = self.rnn(concatenate_h_t, rnn_params)
-        self.h_t = h_t
-        concatenate_state = jnp.hstack((state, h_t))
+        # policy_params, rnn_params = params
+        # prev_state = self.state
+        # h_t_minus =  self.h_t
+        # concatenate_h_t = jnp.hstack((prev_state, h_t_minus))
+        # h_t = self.rnn(concatenate_h_t, rnn_params)
+        # self.h_t = h_t
+        # concatenate_state = jnp.hstack((state, h_t))
                 
         # self.action = self.policy(state, params) 
-        self.action = self.policy(concatenate_state, policy_params)    
+        mu, sigma = self.policy(state, params) 
+        eps = np.random.randn(1)
+        self.action =  mu + sigma * eps
+        # self.action = self.policy(concatenate_state, policy_params)    
         self.state = state        
         # self.action = jax.random.choice(
         #     self.random.generate_key(), 
@@ -244,11 +247,12 @@ class Deep_Cartpole_rbdl(Agent):
         # print("grads",grads)
 
         #scale the gradient
+        # print("gradient total_norm_sqr",total_norm_sqr)
         gradient_clip = 0.2
         scale = min(
             1.0, gradient_clip / (total_norm_sqr**0.5 + 1e-4))
 
-        params = [(w - lr * scale * dw, b - lr * scale * db)
+        params = [(w - lr * dw, b - lr * db)
                 for (w, b), (dw, db) in zip(params, grads)]
 
         return params
