@@ -14,12 +14,13 @@ from model_based_RL import MBRL
 
 
 # Init env and agent
+lr = 1e-3
 env = Cartpole_rbdl(render_flag=True) 
 hybrid_env = Cartpole_Hybrid(model_lr=5e-1)
 agent = Deep_Cartpole_rbdl(
              env_state_size = 4,
              action_space = jnp.array([0]),
-             learning_rate = 1e-2,
+             learning_rate = lr,
              gamma = 0.99,
              max_episode_length = 500,
              seed = 0
@@ -45,8 +46,9 @@ mbrl = MBRL(env, agent)
 
 episode_rewards = []
 episodes_num = 1000
-T = 200
-exp_dir = "experiments" + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+T = 500
+horizon = 50
+exp_dir = "experiments_lr_%d_horizon_%d_" % (lr, horizon)+ strftime("%Y-%m-%d %H:%M:%S", gmtime())
 os.mkdir(exp_dir)
 
 

@@ -26,13 +26,13 @@ class MBRL():
 
         return (env, agent), reward, done
 
-    def roll_out(self, env, agent, params, T):
+    def roll_out(self, env, agent, params, horizon):
         policy_params, value_params =  params
         # policy_params, rnn_params = params
         # policy_params =  params
         gamma = 0.9
         total_return = 0.0
-        for i in range(100):
+        for i in range(horizon):
         # for i in range(T):
             (env, agent), r, done= self.step((env, agent, policy_params), i)
             # (env, agent), r, done= self.step((env, agent, policy_params, rnn_params), i)
@@ -44,7 +44,7 @@ class MBRL():
                 env.past_reward = 0
                 break
         # total_return += agent.value(env.state,value_params) * gamma 
-        total_return += agent.value(env.state,value_params) * gamma ** 100
+        total_return += agent.value(env.state,value_params) * gamma ** horizon
         # total_return += agent.value(env.state,value_params)
         losses = -total_return       
         return losses
