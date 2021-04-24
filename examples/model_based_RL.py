@@ -62,8 +62,8 @@ class MBRL():
 
         if(env.render_flag==True):
             # env.osim_render()
-            # env.render()
-            env.ddpg_render()
+            env.render()
+            # env.ddpg_render()
         control = agent(env.state, params)
         # control = agent(env.state, (policy_params, rnn_params))
         # control = jnp.array([0.0])
@@ -111,6 +111,7 @@ class MBRL():
         
         # buffer =  [trajectory_prev_state_buffer, trajectory_action_buffer, trajectory_reward_buffer, trajectory_next_state_buffer]
         #update value function
+        print("trajectory_prev_state_buffer shape",trajectory_prev_state_buffer.shape)
         value_loss, value_grads =  self.value_loss_grad(trajectory_prev_state_buffer,trajectory_next_state_buffer,trajectory_reward_buffer,agent.value_params, agent)
         agent.value_losses.append(value_loss)
         agent.value_params = agent.update(value_grads,agent.value_params,agent.lr)            

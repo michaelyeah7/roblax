@@ -138,7 +138,7 @@ class Deep_Arm_rbdl(Agent):
         """
         estimate the value of state
         """
-        state = state.flatten() 
+        # state = state.flatten() 
         activations = state
         for w, b in params[:-1]:
             outputs = jnp.dot(activations, w) + b
@@ -171,7 +171,7 @@ class Deep_Arm_rbdl(Agent):
         # print("W",self.W)
         self.state = state
         # self.probs = self.policy(state, params)
-        state = state.flatten() 
+        # state = state.flatten() 
         self.action = self.policy(state, params)         
         # self.action = jax.random.choice(
         #     self.random.generate_key(), 

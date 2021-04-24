@@ -16,10 +16,10 @@ import os
 
 load_params = False
 update_params = True
-render = True
+render_flag = True
 
 # Deep
-env = Arm_rbdl(render=render)
+env = Arm_rbdl(render_flag=render_flag)
 hybrid_env = None
 agent = Deep_Arm_rbdl(
              env_state_size = 14,
@@ -69,6 +69,7 @@ for j in range(episodes_num):
 
         random_state_index = np.random.randint(len(trajectory_state_buffer), size=1)[0]
         env.state =  trajectory_state_buffer[random_state_index]
+        print("env.state.shape",env.state.shape)
 
         #train policy use 5-step partial trajectory and learned value function
         # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)

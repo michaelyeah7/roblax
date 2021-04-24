@@ -58,7 +58,7 @@ class Arm_rbdl(Env):
         At least one angle is larger than 45 degrees.
     """
 
-    def __init__(self, reward_fn=None, seed=0, render=False):
+    def __init__(self, reward_fn=None, seed=0, render_flag=False):
         self.tau = 0.01  # seconds between state updates
         self.kinematics_integrator = "euler"
         self.viewer = None
@@ -75,13 +75,13 @@ class Arm_rbdl(Env):
         self.model = UrdfWrapper("urdf/arm.urdf").model
         # self.model = UrdfWrapper("urdf/two_link_arm.urdf").model
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
-        self.render = render
+        self.render_flag = render_flag
         
         self.reset()
 
         # @jax.jit
         def _dynamics(state, action):
-            q, qdot = state
+            q, qdot = jnp.split(state,2)
             torque = action/10
             # torque = action * 100
             # torque = jnp.array(action)
@@ -104,7 +104,7 @@ class Arm_rbdl(Env):
             # print("qddot",qddot)
             # print("qdot",qdot)
 
-            return jnp.array([q, qdot])
+            return jnp.array([q, qdot]).flatten()
         
         self.dynamics = _dynamics
 
@@ -115,12 +115,12 @@ class Arm_rbdl(Env):
         qdot = jax.random.uniform(
             self.random.get_key(), shape=(7,), minval=-0.05, maxval=0.05
         )
-        self.state = jnp.array([q,qdot])
+        self.state = jnp.array([q,qdot]).flatten()
         return self.state
 
     def step(self, state, action):
         self.state = self.dynamics(state, action)
-        q, qdot = self.state
+        q, qdot = jnp.split(self.state, 2)
 
         # done = jax.lax.cond(
         #     (jnp.abs(x) > jnp.abs(self.x_threshold))
@@ -147,7 +147,7 @@ class Arm_rbdl(Env):
         # # x, x_dot, theta, theta_dot = state
         # reward = state[0]**2 + (state[1])**2 + 100*state[2]**2 + state[3]**2 
         # # reward = jnp.exp(state[0])-1 + state[2]**2 + state[3]**2 
-        q, qdot = state
+        q, qdot = jnp.split(state,2)
         # print("q in reward",q)
         # print("qdot in reward", qdot)
         # reward = jnp.log(jnp.sum(jnp.square(q - self.target))) + jnp.log(jnp.sum(jnp.square(qdot - self.qdot_target))) 
@@ -159,7 +159,7 @@ class Arm_rbdl(Env):
         return reward
 
 
-    def osim_render(self):
-        q, _ = self.state
+    def render(self):
+        q, _ = jnp.split(self.state,2)
         # print("q for render",q)
         self.osim.step_theta(q)
