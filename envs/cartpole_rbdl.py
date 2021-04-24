@@ -18,10 +18,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-# from deluca.envs.core import Env
-# from deluca.utils import Random
-from envs.core import Env
-from utils import Random
+# from utils import Random
 from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
 # from pyRBDL.Dynamics.ForwardDynamics import ForwardDynamics
 from Simulator.UrdfWrapper import UrdfWrapper
@@ -80,7 +77,7 @@ class Cartpole_rbdl():
         # self.x_threshold = 2.4
         self.x_threshold = 6.0
 
-        self.random = Random(seed)
+        # self.random = Random(seed)
 
         self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model
         # self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
@@ -467,7 +464,7 @@ class Cartpole_Hybrid():
         self.tau = 0.02
         self.theta_threshold_radians = 12 * 2 * math.pi / 360
         self.x_threshold = 2.4
-        self.random = Random(seed)
+
 
     def reset(self):
         # self.random = Random(seed)

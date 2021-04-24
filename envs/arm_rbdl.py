@@ -19,10 +19,6 @@ import jax.numpy as jnp
 # from jax.ops import index_add
 import numpy as np
 
-# from deluca.envs.core import Env
-# from deluca.utils import Random
-from envs.core import Env
-from utils import Random
 from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
 # from pyRBDL.Dynamics.ForwardDynamics import ForwardDynamics
 from Simulator.UrdfWrapper import UrdfWrapper
@@ -70,7 +66,6 @@ class Arm_rbdl():
         self.theta_threshold_radians = math.pi / 2
         # self.x_threshold = 2.4
 
-        self.random = Random(seed)
 
         self.model = UrdfWrapper("urdf/arm.urdf").model
         # self.model = UrdfWrapper("urdf/two_link_arm.urdf").model
@@ -109,12 +104,15 @@ class Arm_rbdl():
         self.dynamics = _dynamics
 
     def reset(self):
-        q = jax.random.uniform(
-            self.random.get_key(), shape=(7,), minval=-0.05, maxval=0.05
-        )
-        qdot = jax.random.uniform(
-            self.random.get_key(), shape=(7,), minval=-0.05, maxval=0.05
-        )
+        # q = jax.random.uniform(
+        #     self.random.get_key(), shape=(7,), minval=-0.05, maxval=0.05
+        # )
+        # qdot = jax.random.uniform(
+        #     self.random.get_key(), shape=(7,), minval=-0.05, maxval=0.05
+        # )
+
+        q = jnp.array(list(np.random.uniform(-0.05,0.05,7)))
+        qdot = jnp.array(list(np.random.uniform(-0.05,0.05,7)))
         self.state = jnp.array([q,qdot]).flatten()
         return self.state
 

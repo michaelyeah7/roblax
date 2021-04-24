@@ -5,8 +5,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from envs.core import Env
-from utils import Random
+# from envs.core import Env
+# from utils import Random
 
 
 @jax.jit
@@ -41,7 +41,7 @@ class Pendulum():
         self.angle_normalize = angle_normalize
         self.nsamples = 0
 
-        self.random = Random(seed)
+        # self.random = Random(seed)
 
         self.render_flag = render_flag
 
@@ -106,8 +106,11 @@ class Pendulum():
         return -(jnp.sum(angle_normalize(th) ** 2 + 0.1 * thdot ** 2))
 
     def reset(self):
-        th = jax.random.uniform(self.random.generate_key(), minval=-jnp.pi, maxval=jnp.pi)
-        thdot = jax.random.uniform(self.random.generate_key(), minval=-1.0, maxval=1.0)
+        # th = jax.random.uniform(self.random.generate_key(), minval=-jnp.pi, maxval=jnp.pi)
+        # thdot = jax.random.uniform(self.random.generate_key(), minval=-1.0, maxval=1.0)
+
+        th = float(np.random.uniform(-np.pi,np.pi,1))
+        thdot = float(np.random.uniform(-1.0,1.0,1))
 
         self.state = jnp.array([th, thdot])
 
