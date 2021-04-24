@@ -2,8 +2,10 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import jax
 from jax import lax
-from envs import Cartpole_rbdl, Cartpole_Hybrid
-from agents import Deep_Cartpole_rbdl
+# from envs import Cartpole_rbdl, Cartpole_Hybrid
+from envs.cartpole_rbdl import Cartpole_rbdl, Cartpole_Hybrid
+# from agents import Deep_Cartpole_rbdl
+from agent import Deep_Agent
 import copy
 import pickle
 from time import gmtime, strftime 
@@ -13,50 +15,38 @@ import os
 from model_based_RL import MBRL
 
 
-# Init env and agent
+#configs
 lr = 1e-3
-env = Cartpole_rbdl(render_flag=False) 
-hybrid_env = Cartpole_Hybrid(model_lr=5e-1)
-agent = Deep_Cartpole_rbdl(
-             env_state_size = 4,
-             action_space = jnp.array([0]),
-             learning_rate = lr,
-             gamma = 0.99,
-             max_episode_length = 500,
-             seed = 0
-            )
-
-# load_params = True
-# update_params = False
-# render = True
-
+episodes_num = 1000
+T = 500 #time steps of each episode
+horizon = 100 #rollout horizon
+render_flag = True
 load_params = False
 update_params = True
+save_interval = 10
 
-
-# loaded_params = pickle.load( open( "experiments2021-04-09 18:56:36/cartpole_svg_model_params_episode_130_2021-04-09 20:24:08.txt", "rb" ) )
-# hybrid_env.model_params = loaded_params
+# Init env and agent
+env = Cartpole_rbdl(render_flag=render_flag) 
+hybrid_env = Cartpole_Hybrid(model_lr=5e-1)
+agent = Deep_Agent(
+             state_size = 4,
+             action_size = 1,
+            )
+#init learner
+mbrl = MBRL(env, agent, lr = lr)
 
 if load_params == True:
-    loaded_policy_params = pickle.load( open( "experiments2021-04-23 03:12:24/cartpole_svg_params_episode_990_.txt", "rb" ) )
+    loaded_policy_params = pickle.load( open( "examples/models/cartpole/cartpole_svg_params_episode_990_.txt", "rb" ) )
     agent.params = loaded_policy_params
-    loaded_value_params = pickle.load( open( "experiments2021-04-23 03:12:24/cartpole_svg_value_params_episode_990_2021-04-23 08:32:09.txt", "rb" ) )
-    agent.value_params = loaded_policy_params    
+    loaded_value_params = pickle.load( open( "examples/models/cartpole/cartpole_svg_value_params_episode_990_.txt", "rb" ) )
+    agent.value_params = loaded_policy_params   
 
-#init learner
-mbrl = MBRL(env, agent)
-
-episode_rewards = []
-episodes_num = 1000
-T = 500
-horizon = 100
-exp_dir = "experiments_lr_%f_horizon_%d_" % (lr, horizon)+ strftime("%Y-%m-%d %H:%M:%S", gmtime())
+exp_dir = "cartpole_experiments_lr_%f_horizon_%d_" % (lr, horizon)+ strftime("%Y-%m-%d %H:%M:%S", gmtime())
 os.mkdir(exp_dir)
 
-
-
+#begin training
+episode_rewards = []
 for j in range(episodes_num):
-
     rewards = 0
     env.reset()           
     print("episode:{%d}" % j)
@@ -67,8 +57,6 @@ for j in range(episodes_num):
 
     #update the policy
     if (update_params==True):
-        #update policy using 20 horizon 5 partial trajectories
-        # for i in range(20):
         env.reset()
         # hybrid_env.reset() 
 
@@ -88,8 +76,8 @@ for j in range(episodes_num):
         # policy_grads, rnn_grads = grads 
         # policy_grads = grads 
         # print("policy_grads",policy_grads)         
-        agent.params = agent.update(policy_grads, agent.params, agent.lr)
-        agent.value_params =  agent.update(value_grads,agent.value_params, agent.lr)
+        agent.params = mbrl.update(policy_grads, agent.params, mbrl.lr)
+        agent.value_params =  mbrl.update(value_grads,agent.value_params, mbrl.lr)
         # agent.rnn_params = agent.update(rnn_grads, agent.rnn_params, agent.lr)
         # agent.state = jnp.zeros((agent.env_state_size,))
         # agent.h_t = jnp.zeros(4)
@@ -98,12 +86,14 @@ for j in range(episodes_num):
     print("rewards is %f" % rewards)
     # print("hybrid_env.model_losses is %f" % hybrid_env.model_losses[j])
     # if (j%10==0 and j!=0 and update_params==True):
-    if (j%10==0 and j!=0):
+    if (j % save_interval == 0 and j!=0):
         #for agent loss
         with open(exp_dir + "/cartpole_svg_params"+ "_episode_%d_" % j + ".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.params, fp)
         # with open(exp_dir + "/cartpole_rnn_params"+ "_episode_%d_" % j  +".txt", "wb") as fp:   #Pickling
         #     pickle.dump(agent.rnn_params, fp)
+        with open(exp_dir + "/cartpole_rewards"+ "_episode_%d_" % j + ".txt", "wb") as fp:   #Pickling
+            pickle.dump(episode_rewards[1:], fp)
         plt.figure()
         plt.plot(episode_rewards[1:])
         plt.savefig((exp_dir + '/cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')

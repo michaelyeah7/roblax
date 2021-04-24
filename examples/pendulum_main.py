@@ -2,45 +2,48 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import jax
 from jax import lax
-from envs.arm_rbdl import Arm_rbdl
-# from agents import Deep_Arm_rbdl
+from envs.pendulum import Pendulum
+# from agents import Deep_Pendulum
 from agent import Deep_Agent
 import copy
 import pickle
 from time import gmtime, strftime 
 from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
 import numpy as np
-from model_based_RL import MBRL
 import os
-
+from model_based_RL import MBRL
 
 #configs
 lr = 1e-3
 episodes_num = 1000
 T = 100 #time steps of each episode
-horizon = 20 #rollout horizon
+horizon = 70 #rollout horizon
 render_flag = True
 load_params = False
 update_params = True
 save_interval = 10
 
-# Deep
-env = Arm_rbdl(render_flag=render_flag)
+# Init env and agent
+env = Pendulum(render_flag=True) 
 hybrid_env = None
 agent = Deep_Agent(
-             state_size = 14,
-             action_size = 7,
+             state_size = 2,
+             action_size = 1,
             )
 #init learner
 mbrl = MBRL(env, agent, lr = lr)
 
 if load_params == True:
-    loaded_params = pickle.load( open( "experiments2021-04-12 22:14:59/cartpole_svg_params_episode_10_2021-04-12 22:22:35.txt", "rb" ) )
-    agent.params = loaded_params
+    policy_loaded_params = pickle.load( open( "experiments2021-04-21 03:51:28/cartpole_svg_params_episode_990_.txt", "rb" ) )
+    agent.params = policy_loaded_params
+    rnn_loaded_params = pickle.load( open( "experiments2021-04-21 03:51:28/cartpole_rnn_params_episode_990_.txt", "rb" ) )
+    agent.rnn_params = rnn_loaded_params
 
-exp_dir = "arm_experiments_lr_%f_horizon_%d_" % (lr, horizon)+ strftime("%Y-%m-%d %H:%M:%S", gmtime())
+#init learner
+mbrl = MBRL(env, agent)
+
+exp_dir = "pendulum_experiments_lr_%f_horizon_%d_" % (lr, horizon)+ strftime("%Y-%m-%d %H:%M:%S", gmtime())
 os.mkdir(exp_dir)
-
 
 #begin training
 episode_rewards = []
@@ -52,6 +55,7 @@ for j in range(episodes_num):
 
     #evaluate rewards and update value function
     rewards, trajectory_state_buffer = mbrl.roll_out_for_render(env, hybrid_env, agent, agent.params, T)
+    # rewards, trajectory_state_buffer = mbrl.roll_out_for_render(env, hybrid_env, agent, (agent.params, agent.rnn_params), T)
 
     #update the policy
     if (update_params==True):
@@ -64,12 +68,14 @@ for j in range(episodes_num):
         env.state =  trajectory_state_buffer[random_state_index]
 
         #train policy use 5-step partial trajectory and learned value function
-        # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)
         total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
+        # total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.rnn_params), T)
+        # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)
         # total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
 
         #get and update policy and value function grads
         policy_grads, value_grads = grads 
+        # policy_grads, rnn_grads = grads 
         # policy_grads = grads 
         # print("policy_grads",policy_grads)         
         agent.params = mbrl.update(policy_grads, agent.params, mbrl.lr)
@@ -81,20 +87,29 @@ for j in range(episodes_num):
     # if (j%10==0 and j!=0 and update_params==True):
     if (j % save_interval == 0 and j!=0):
         #for agent loss
-        with open(exp_dir + "/arm_svg_params"+ "_episode_%d_" % j +".txt", "wb") as fp:   #Pickling
+        with open(exp_dir + "/pendulum_svg_params"+ "_episode_%d_" % j +".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.params, fp)
-        with open(exp_dir + "/arm_rewards"+ "_episode_%d_" % j + ".txt", "wb") as fp:   #Pickling
+        with open(exp_dir + "/pendulum_rewards"+ "_episode_%d_" % j + ".txt", "wb") as fp:   #Pickling
             pickle.dump(episode_rewards[1:], fp)
+        # with open(exp_dir + "/cartpole_rnn_params"+ "_episode_%d_" % j  +".txt", "wb") as fp:   #Pickling
+        #     pickle.dump(agent.rnn_params, fp)
         plt.figure()
         plt.plot(episode_rewards[1:])
-        plt.savefig((exp_dir + '/arm_svg_loss_episode_%d_' % j) + '.png')
+        plt.savefig((exp_dir + '/pendulum_svg_loss_episode_%d_' % j) + '.png')
         plt.close()
+
+        # #for gradient norm
+        # plt.figure()
+        # plt.plot(gradient_norm_list[1:])
+        # plt.savefig((exp_dir + '/pendulum_gradient_norm_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        # plt.close()        
+
         #for value function loss
-        with open(exp_dir + "/arm_svg_value_params"+ "_episode_%d_" % j +".txt", "wb") as fp:   #Pickling
+        with open(exp_dir + "/pendulum_svg_value_params"+ "_episode_%d_" % j + ".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.value_params, fp)
         plt.figure()
         plt.plot(agent.value_losses)
-        plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + '.png')
+        plt.savefig((exp_dir + '/pendulum_svg_agent_value_loss_episode_%d_' % j) + '.png')
         plt.close()        
         # #for model loss
         # with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling

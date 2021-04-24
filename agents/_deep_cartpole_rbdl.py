@@ -25,7 +25,7 @@ from utils import Random
 import numpy.random as npr
 
 # generic deep controller for 1-dimensional discrete non-negative action space
-class Deep_Cartpole_rbdl(Agent):
+class Deep_Cartpole_rbdl():
     """
     Generic deep controller that uses zero-order methods to train on an
     environment.

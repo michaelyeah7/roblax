@@ -29,12 +29,11 @@ import jax.numpy as jnp
 import numpy as np
 from gym import spaces
 
-from deluca.envs.core import Env
-from deluca.utils import Random
+from utils import Random
 
 
-class MountainCar(Env):
-    def __init__(self, goal_velocity=0, seed=0, horizon=50):
+class MountainCar():
+    def __init__(self, goal_velocity=0, seed=0, horizon=50, render_flag=False):
         self.min_action = -1.0
         self.max_action = 1.0
         self.min_position = -1.2
@@ -57,6 +56,9 @@ class MountainCar(Env):
             low=self.low_state, high=self.high_state, dtype=np.float32
         )
         self.nsamples = 0
+
+        self.render_flag = render_flag
+        self.viewer = None
         
         # @jax.jit
         def _dynamics(state, action):
@@ -103,8 +105,8 @@ class MountainCar(Env):
 
         self.reset()
 
-    def step(self, action):
-        self.state = self.dynamics(self.state, action)
+    def step(self, state, action):
+        self.state = self.dynamics(state, action)
         position = self.state[0]
         velocity = self.state[1]
 
@@ -113,7 +115,7 @@ class MountainCar(Env):
 
         # reward = 100.0 * done
         # reward -= jnp.power(action, 2) * 0.1
-        reward = self.reward_fn(self.state, action)
+        reward = - self.reward_fn(self.state, action)
 
         return self.state, reward, done, {}
 

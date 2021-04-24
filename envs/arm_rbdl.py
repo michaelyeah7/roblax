@@ -33,7 +33,7 @@ import os
 import pybullet as p
 from numpy import sin, cos
 
-class Arm_rbdl(Env):
+class Arm_rbdl():
     """
     Description:
         A 7 link arm robot contains 6 joints. The first base_link to arm_link_0 fixed joint 
@@ -81,7 +81,7 @@ class Arm_rbdl(Env):
 
         # @jax.jit
         def _dynamics(state, action):
-            q, qdot = jnp.split(state,2)
+            q, qdot = jnp.split(state, 2)
             torque = action/10
             # torque = action * 100
             # torque = jnp.array(action)

@@ -32,7 +32,7 @@ import os
 import pybullet as p
 from numpy import sin, cos
 
-class Cartpole_rbdl(Env):
+class Cartpole_rbdl():
     def __init__(self, render_flag=False, reward_fn=None, seed=0):
 
         # self.gravity = 9.8
@@ -109,8 +109,8 @@ class Cartpole_rbdl(Env):
         self.state_size, self.action_size = 4, 1
         self.observation_size = self.state_size
 
-        self.d_reward_d_x_prime = jax.grad(self.reward_func)
-        self.d_x_prime_d_a = jax.jacfwd(self.dynamics,argnums=1)
+        # self.d_reward_d_x_prime = jax.grad(self.reward_func)
+        # self.d_x_prime_d_a = jax.jacfwd(self.dynamics,argnums=1)
         self.past_reward = 0
         self.reset()
 
@@ -302,7 +302,7 @@ class Cartpole_rbdl(Env):
         return reward
 
 
-    def render(self, mode="human"):
+    def original_render(self, mode="human"):
         screen_width = 600
         screen_height = 400
 
@@ -358,7 +358,7 @@ class Cartpole_rbdl(Env):
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
 
 
-    def ddpg_render(self, mode='human', close=False):
+    def render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
                 self.viewer.close()
