@@ -17,9 +17,10 @@ from model_based_RL import MBRL
 
 #configs
 lr = 1e-3
-episodes_num = 1000
+batch_size = 512
+episodes_num = 2000
 T = 500 #time steps of each episode
-horizon = 100 #rollout horizon
+horizon = 20 #rollout horizon
 render_flag = True
 load_params = False
 update_params = True
@@ -33,7 +34,7 @@ agent = Deep_Agent(
              action_size = 1,
             )
 #init learner
-mbrl = MBRL(env, agent, lr = lr)
+mbrl = MBRL(env, agent, lr = lr, batch_size = batch_size)
 
 if load_params == True:
     loaded_policy_params = pickle.load( open( "examples/models/cartpole/cartpole_svg_params_episode_990_.txt", "rb" ) )
@@ -41,8 +42,9 @@ if load_params == True:
     loaded_value_params = pickle.load( open( "examples/models/cartpole/cartpole_svg_value_params_episode_990_.txt", "rb" ) )
     agent.value_params = loaded_policy_params   
 
-exp_dir = "cartpole_experiments_lr_%f_horizon_%d_" % (lr, horizon)+ strftime("%Y-%m-%d %H:%M:%S", gmtime())
+exp_dir = "cartpole_experiments_" + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "lr_%f_horizon_%d_batch_size_%d" % (lr, horizon, batch_size) 
 os.mkdir(exp_dir)
+print("exp_dir",exp_dir)
 
 #begin training
 episode_rewards = []

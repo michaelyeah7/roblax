@@ -65,6 +65,8 @@ class Arm_rbdl():
         # Angle at which to fail the episode
         self.theta_threshold_radians = math.pi / 2
         # self.x_threshold = 2.4
+        self.state_size = 14
+        self.action_size = 7
 
 
         self.model = UrdfWrapper("urdf/arm.urdf").model
@@ -111,8 +113,10 @@ class Arm_rbdl():
         #     self.random.get_key(), shape=(7,), minval=-0.05, maxval=0.05
         # )
 
-        q = jnp.array(list(np.random.uniform(-0.05,0.05,7)))
-        qdot = jnp.array(list(np.random.uniform(-0.05,0.05,7)))
+        # q = jnp.array(list(np.random.uniform(-0.05,0.05,7)))
+        # qdot = jnp.array(list(np.random.uniform(-0.05,0.05,7)))
+        q = jnp.zeros(7)
+        qdot = jnp.zeros(7)
         self.state = jnp.array([q,qdot]).flatten()
         return self.state
 

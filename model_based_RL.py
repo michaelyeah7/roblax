@@ -5,13 +5,19 @@ import gym
 import numpy as np
 
 class MBRL():
-    def __init__(self, env, agent, lr = 1e-3):
+    def __init__(self, env, agent, lr = 1e-3, batch_size = 32):
         self.env = env
         self.agent = agent
         self.lr = lr
+        self.batch_size = batch_size
         self.f_grad = jax.value_and_grad(self.roll_out,argnums=2)
         self.value_loss_grad = jax.value_and_grad(self.loss_value,argnums=3)
         self.model_loss_grad = jax.value_and_grad(self.loss_hybrid_model,argnums=3)
+
+        self.trajectory_prev_state_buffer = jnp.zeros(env.state_size)
+        self.trajectory_action_buffer = jnp.zeros(env.action_size)
+        self.trajectory_reward_buffer = jnp.zeros(1)
+        self.trajectory_next_state_buffer = jnp.zeros(env.state_size)
 
     def step(self, context, x):
         env, agent, params = context
@@ -84,17 +90,20 @@ class MBRL():
         rewards = 0.0
         for i in range(T):
             (env, hybrid_env, agent), prev_state, control, reward, next_state, done= self.step_for_render((env, hybrid_env, agent,params), i)
-            if (i == 0):
-                trajectory_prev_state_buffer = prev_state
-                trajectory_action_buffer = control
-                trajectory_reward_buffer = reward
-                trajectory_next_state_buffer = next_state
-            else:
-                trajectory_prev_state_buffer = jnp.vstack((trajectory_prev_state_buffer,prev_state))
-                trajectory_action_buffer = jnp.vstack((trajectory_action_buffer,control))
-                trajectory_reward_buffer = jnp.vstack((trajectory_reward_buffer,reward))
-                trajectory_next_state_buffer = jnp.vstack((trajectory_next_state_buffer,next_state))
-
+            # if (i == 0):
+            #     trajectory_prev_state_buffer = prev_state
+            #     trajectory_action_buffer = control
+            #     trajectory_reward_buffer = reward
+            #     trajectory_next_state_buffer = next_state
+            # else:
+            #     trajectory_prev_state_buffer = jnp.vstack((trajectory_prev_state_buffer,prev_state))
+            #     trajectory_action_buffer = jnp.vstack((trajectory_action_buffer,control))
+            #     trajectory_reward_buffer = jnp.vstack((trajectory_reward_buffer,reward))
+            #     trajectory_next_state_buffer = jnp.vstack((trajectory_next_state_buffer,next_state))
+            self.trajectory_prev_state_buffer = jnp.vstack((self.trajectory_prev_state_buffer,prev_state))
+            self.trajectory_action_buffer = jnp.vstack((self.trajectory_action_buffer,control))
+            self.trajectory_reward_buffer = jnp.vstack((self.trajectory_reward_buffer,reward))
+            self.trajectory_next_state_buffer = jnp.vstack((self.trajectory_next_state_buffer,next_state))
                 
             # rewards = rewards * gamma + r 
             rewards = rewards + reward
@@ -106,10 +115,12 @@ class MBRL():
         
         # buffer =  [trajectory_prev_state_buffer, trajectory_action_buffer, trajectory_reward_buffer, trajectory_next_state_buffer]
         #update value function
-        value_loss, value_grads =  self.value_loss_grad(trajectory_prev_state_buffer,trajectory_next_state_buffer,trajectory_reward_buffer,agent.value_params, agent)
+        prev_state_batch, action_batch, reward_batch, next_state_batch = self.sample_batch()
+        # value_loss, value_grads =  self.value_loss_grad(trajectory_prev_state_buffer,trajectory_next_state_buffer,trajectory_reward_buffer,agent.value_params, agent)
+        value_loss, value_grads =  self.value_loss_grad(prev_state_batch, next_state_batch, reward_batch, agent.value_params, agent)
         agent.value_losses.append(value_loss)
         agent.value_params = self.update(value_grads,agent.value_params, self.lr)            
-        return rewards, trajectory_prev_state_buffer
+        return rewards, prev_state_batch
 
     def loss_hybrid_model(self, prev_state, control, true_next_state, model_params, hybrid_env):
         next_state = hybrid_env.forward(prev_state, control, model_params)
@@ -144,3 +155,15 @@ class MBRL():
                 for (w, b), (dw, db) in zip(params, grads)]
 
         return params        
+
+    def sample_batch(self):
+        if self.trajectory_prev_state_buffer.shape[0] < self.batch_size:
+            batch_size = self.trajectory_prev_state_buffer.shape[0] - 1
+        else:
+            batch_size = self.batch_size
+        idxs = np.random.choice(np.arange(1,self.trajectory_prev_state_buffer.shape[0]), batch_size, replace=False)
+        prev_state_batch = self.trajectory_prev_state_buffer[idxs,:]
+        action_batch = self.trajectory_action_buffer[idxs,:]
+        reward_batch = self.trajectory_reward_buffer[idxs,:]
+        next_state_batch = self.trajectory_next_state_buffer[idxs,:]
+        return prev_state_batch, action_batch, reward_batch, next_state_batch
