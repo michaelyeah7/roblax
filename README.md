@@ -20,11 +20,11 @@ python examples/cartpole_main.py
 
 ## Envs
 ### Pendulum
-![](examples/models/pendulum/cartpole_svg_agent_value_loss_episode_1210_.png)
+![](examples/models/pendulum/pendulum_svg_agent_value_loss_episode_200_.png)
 
 ### Cart Pole
+![](examples/models/cartpole/cartpole_svg_agent_value_loss_episode_1210_.png)
 
-![](examples/models/cartpole/pendulum_svg_agent_value_loss_episode_200_.png)
 ![](assets/cart_pole.gif)
 
 Control the cartpole using manually calculated forward dynamics. Training converges at very fast speed(first two episodes). The cartpole can keep upright for 200 timesteps.
