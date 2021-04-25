@@ -8,17 +8,20 @@ This is a magics simulator with a NN controller. A render and urdf parser also i
 ## Model-based Reinforcement Learning
 Implement an actor-critic mbrl algorithm.
 
-The total reward of cartpole experiment(140 episodes).
+<!-- The total reward of cartpole experiment(140 episodes).
 ![](assets/cartpole_loss.png)
 The value loss of cartpole experiment. 
 ![](assets/cartpole_value_loss.png) 
 ```
 python examples/cartpole_main.py
-```
+``` -->
 
 
 
 ## Envs
+### Pendulum
+![](examples/models/pendulum/pendulum_svg_agent_value_loss_episode_200_.png)
+
 ### Cart Pole
 
 ![](assets/cart_pole.gif)

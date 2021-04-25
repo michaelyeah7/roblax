@@ -14,10 +14,10 @@ import os
 from model_based_RL import MBRL
 
 #configs
-lr = 1e-3
+lr = 1e-2
 episodes_num = 1000
 T = 100 #time steps of each episode
-horizon = 70 #rollout horizon
+horizon = 10 #rollout horizon
 render_flag = True
 load_params = False
 update_params = True
