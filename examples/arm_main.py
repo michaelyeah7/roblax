@@ -65,7 +65,7 @@ for j in range(episodes_num):
 
         #train policy use 5-step partial trajectory and learned value function
         # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)
-        total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
+        total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), horizon)
         # total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
 
         #get and update policy and value function grads

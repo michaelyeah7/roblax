@@ -32,6 +32,7 @@ class MBRL():
 
         return (env, agent), reward, done
 
+    # @jax.partial(jax.jit, static_argnums=(0,1,3))
     def roll_out(self, env, agent, params, horizon):
         policy_params, value_params =  params
         # policy_params, rnn_params = params
@@ -55,6 +56,7 @@ class MBRL():
         losses = -total_return       
         return losses
 
+    # @jax.jit
     def loss_value(self, state, next_state, reward, value_params, agent):
         gamma = 0.99
         # td = reward + gamma * agent.value(next_state, value_params) - agent.value(state, value_params)
@@ -62,6 +64,7 @@ class MBRL():
         value_loss = 0.5 * (td ** 2).mean()
         return value_loss
 
+    # @jax.jit
     def step_for_render(self, context, x):
         env, hybrid_env, agent, params = context
         # policy_params, rnn_params = params
@@ -84,6 +87,8 @@ class MBRL():
 
         return (env, hybrid_env, agent), prev_state, control, reward, next_state, done
 
+    # @jax.partial(jax.jit, static_argnums=(0,1,2))
+    # @jax.jit
     def roll_out_for_render(self, env, hybrid_env, agent, params, T):
         # trajectory_state_buffer.append(env.state)
         gamma = 0.99

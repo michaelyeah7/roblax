@@ -174,7 +174,7 @@ class ObdlRender():
             col_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=target_obj.shape)
         elif(target_obj.type == "cylinder"):
             vis_id = p.createVisualShape(p.GEOM_CYLINDER, radius=target_obj.shape[0],length=target_obj.shape[1], rgbaColor=target_obj.rgba,visualFrameOrientation=target_obj.init_qua)
-            col_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=target_obj.shape[0],length=target_obj.shape[1])
+            col_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=target_obj.shape[0],height=target_obj.shape[1])
         elif(target_obj.type == "sphere"):
             vis_id = p.createVisualShape(p.GEOM_SPHERE, radius=target_obj.shape[0],rgbaColor=target_obj.rgba,visualFrameOrientation=target_obj.init_qua)
             col_id = p.createCollisionShape(p.GEOM_SPHERE, radius=target_obj.shape[0])
