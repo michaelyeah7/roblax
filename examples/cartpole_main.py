@@ -20,8 +20,8 @@ lr = 1e-3
 batch_size = 512
 episodes_num = 2000
 T = 500 #time steps of each episode
-horizon = 20 #rollout horizon
-render_flag = True
+horizon = 100 #rollout horizon
+render_flag = False
 load_params = False
 update_params = True
 save_interval = 10
@@ -48,6 +48,7 @@ print("exp_dir",exp_dir)
 
 #begin training
 episode_rewards = []
+total_return_list = []
 for j in range(episodes_num):
     rewards = 0
     env.reset()           
@@ -68,7 +69,8 @@ for j in range(episodes_num):
         env.state =  trajectory_state_buffer[random_state_index]
 
         #train policy use 5-step partial trajectory and learned value function
-        total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
+        total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), horizon)
+        total_return_list.append(total_return)
         # total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.rnn_params), T)
         # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)
         # total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
@@ -99,6 +101,13 @@ for j in range(episodes_num):
         plt.figure()
         plt.plot(episode_rewards[1:])
         plt.savefig((exp_dir + '/cartpole_svg_loss_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()
+
+        with open(exp_dir + "/cartpole_total_return"+ "_episode_%d_" % j + ".txt", "wb") as fp:   #Pickling
+            pickle.dump(total_return_list[1:], fp)
+        plt.figure()
+        plt.plot(total_return_list[1:])
+        plt.savefig((exp_dir + '/cartpole_total_return_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
         plt.close()
 
         #for value function loss

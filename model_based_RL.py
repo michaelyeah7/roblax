@@ -74,6 +74,7 @@ class MBRL():
             env.render()
             # env.ddpg_render()
         control = agent.sample_action(env.state, params)
+        # print("control",control)
         # control = agent(env.state, (policy_params, rnn_params))
         # control = jnp.array([0.0])
         prev_state = copy.deepcopy(env.state)

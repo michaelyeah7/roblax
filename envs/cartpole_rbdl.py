@@ -79,7 +79,8 @@ class Cartpole_rbdl():
 
         # self.random = Random(seed)
 
-        self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model
+        # self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model
+        self.model = UrdfWrapper("urdf/inverted pendulum_link1_1.urdf").model
         # self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
         #three dynamic options "RBDL" "Original" "PDP" "DDPG"
@@ -185,7 +186,7 @@ class Cartpole_rbdl():
 
             if (self.dynamics_option == "RBDL"):
                 #calculate xacc & thetaacc using jaxRBDL
-                force = force/100
+                force = force
                 q = jnp.array([0,0,x,theta])
                 qdot = jnp.array([0,0,x_dot,theta_dot])
                 torque = jnp.array([0,0,force,0.])
@@ -355,7 +356,7 @@ class Cartpole_rbdl():
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
 
 
-    def render(self, mode='human', close=False):
+    def ddpg_render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
                 self.viewer.close()
@@ -438,7 +439,8 @@ class Cartpole_rbdl():
 
 
 
-    def osim_render(self):
+    # def osim_render(self):
+    def render(self):
         # # q=[0,self.state[0],self.state[1]]
         # for j in range(2):
         #     p.setJointMotorControl2(self.test_robot,j,p.POSITION_CONTROL,self.state[j],force = 1)

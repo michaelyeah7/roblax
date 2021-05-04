@@ -44,6 +44,7 @@ os.mkdir(exp_dir)
 
 #begin training
 episode_rewards = []
+total_return_list = []
 for j in range(episodes_num):
 
     rewards = 0
@@ -66,6 +67,7 @@ for j in range(episodes_num):
         #train policy use 5-step partial trajectory and learned value function
         # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)
         total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), horizon)
+        total_return_list.append(total_return)
         # total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)
 
         #get and update policy and value function grads
@@ -89,12 +91,20 @@ for j in range(episodes_num):
         plt.plot(episode_rewards[1:])
         plt.savefig((exp_dir + '/arm_svg_loss_episode_%d_' % j) + '.png')
         plt.close()
+
+        with open(exp_dir + "/arm_total_return"+ "_episode_%d_" % j + ".txt", "wb") as fp:   #Pickling
+            pickle.dump(total_return_list[1:], fp)
+        plt.figure()
+        plt.plot(total_return_list[1:])
+        plt.savefig((exp_dir + '/arm_total_return_episode_%d_' % j)+ strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.png')
+        plt.close()
+
         #for value function loss
         with open(exp_dir + "/arm_svg_value_params"+ "_episode_%d_" % j +".txt", "wb") as fp:   #Pickling
             pickle.dump(agent.value_params, fp)
         plt.figure()
         plt.plot(agent.value_losses)
-        plt.savefig((exp_dir + '/cartpole_svg_agent_value_loss_episode_%d_' % j) + '.png')
+        plt.savefig((exp_dir + '/arm_svg_agent_value_loss_episode_%d_' % j) + '.png')
         plt.close()        
         # #for model loss
         # with open(exp_dir + "/cartpole_svg_model_params"+ "_episode_%d_" % j + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +".txt", "wb") as fp:   #Pickling
