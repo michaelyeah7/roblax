@@ -36,8 +36,8 @@ class Deep_Agent():
         activations = state
         for w, b in params[:-1]:
             outputs = jnp.dot(activations, w) + b
-            # activations = jnp.tanh(outputs)
-            activations = jax.nn.relu(outputs)
+            activations = jnp.tanh(outputs)
+            # activations = jax.nn.relu(outputs)
         final_w, final_b = params[-1]
         logits = jnp.dot(activations, final_w) + final_b
         mu, sigma = jnp.split(logits, 2)
@@ -54,8 +54,8 @@ class Deep_Agent():
         activations = state
         for w, b in params[:-1]:
             outputs = jnp.dot(activations, w) + b
-            # activations = jnp.tanh(outputs)
-            activations = jax.nn.relu(outputs)
+            activations = jnp.tanh(outputs)
+            # activations = jax.nn.relu(outputs)
         final_w, final_b = params[-1]
         logits = jnp.dot(activations, final_w) + final_b
         return logits[0]

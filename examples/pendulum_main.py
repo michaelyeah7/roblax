@@ -16,8 +16,8 @@ from model_based_RL import MBRL
 #configs
 lr = 1e-2
 episodes_num = 1000
-T = 100 #time steps of each episode
-horizon = 10 #rollout horizon
+T = 200 #time steps of each episode
+horizon = 20 #rollout horizon
 render_flag = True
 load_params = False
 update_params = True
@@ -42,7 +42,7 @@ if load_params == True:
 #init learner
 mbrl = MBRL(env, agent)
 
-exp_dir = "pendulum_experiments_lr_%f_horizon_%d_" % (lr, horizon)+ strftime("%Y-%m-%d %H:%M:%S", gmtime())
+exp_dir = "pendulum_experiments_" + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "lr_%f_horizon_%d_" % (lr, horizon)
 os.mkdir(exp_dir)
 
 #begin training
@@ -68,7 +68,7 @@ for j in range(episodes_num):
         env.state =  trajectory_state_buffer[random_state_index]
 
         #train policy use 5-step partial trajectory and learned value function
-        total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), T)
+        total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.value_params), horizon)
         # total_return, grads = mbrl.f_grad(env, agent, (agent.params, agent.rnn_params), T)
         # total_return, grads = mbrl.f_grad(env, agent, agent.params, T)
         # total_return, grads = mbrl.f_grad(hybrid_env, agent, (agent.params, agent.value_params),T)

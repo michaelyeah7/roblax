@@ -15,10 +15,10 @@ import os
 
 
 #configs
-lr = 1e-5
+lr = 1e-2
 episodes_num = 1000
 T = 100 #time steps of each episode
-horizon = 50 #rollout horizon
+horizon = 20 #rollout horizon
 render_flag = True
 load_params = False
 update_params = True
