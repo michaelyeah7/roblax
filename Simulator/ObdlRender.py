@@ -31,7 +31,7 @@ class RenderObject():
         self.type = shape_type
         self.origin = np.asarray(origin) 
         self.shape = size # filename if mesh
-        if(self.type != 'mesh' and self.type != 'cylinder'):
+        if(self.type != 'mesh' and self.type != 'cylinder' and self.type != 'capsule' and self.type != 'sphere'):
             self.shape = np.asarray(size) /2.0
         self.parent_joint = parent_joint
         self.link_id = link_id
@@ -137,8 +137,14 @@ class ObdlRender():
                     cylinder_color = [0.0,1.0,1.0,1.0]
                     if(v.material):
                         cylinder_color = v.material.color
-                    print("cylinder_length",cylinder_length)
                     _obj.assign_prop("cylinder",cylinder_origin,[cylinder_radius,cylinder_length],_pid,_lid,cylinder_color)
+                # elif(v.geometry.capsule):
+                #     capsule_radius,capsule_length = v.geometry.capsule.radius,v.geometry.capsule.length
+                #     capsule_origin = v.origin[:3,3] #matrix to xyz
+                #     capsule_color = [0.0,1.0,1.0,1.0]
+                #     if(v.material):
+                #         capsule_color = v.material.color
+                #     _obj.assign_prop("capsule",capsule_origin,[capsule_radius,capsule_length],_pid,_lid,capsule_color)
                 elif(v.geometry.sphere):
                     sphere_radius = v.geometry.sphere.radius
                     sphere_origin = v.origin[:3,3] #matrix to xyz
@@ -157,7 +163,6 @@ class ObdlRender():
                 init_rpy = matrix_to_rpy(v.origin[:3,:3])
                 init_qua = self.p.getQuaternionFromEuler(init_rpy)
                 _obj.assign_initQua(init_qua,init_rpy)
-                print("_obj.shape",_obj.shape)
                 bId = self.create_visualshape(target_obj=_obj)
                 _obj.assign_id(bId)
                 _obj.assign_name(l.name)
@@ -175,12 +180,14 @@ class ObdlRender():
             vis_id = p.createVisualShape(p.GEOM_BOX, halfExtents=target_obj.shape,rgbaColor=target_obj.rgba,visualFrameOrientation=target_obj.init_qua)
             col_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=target_obj.shape)
         elif(target_obj.type == "cylinder"):
-            print("target_obj.shape",target_obj.shape)
             vis_id = p.createVisualShape(p.GEOM_CYLINDER, radius=target_obj.shape[0],length=target_obj.shape[1], rgbaColor=target_obj.rgba,visualFrameOrientation=target_obj.init_qua)
             col_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=target_obj.shape[0],height=target_obj.shape[1])
         elif(target_obj.type == "sphere"):
             vis_id = p.createVisualShape(p.GEOM_SPHERE, radius=target_obj.shape[0],rgbaColor=target_obj.rgba,visualFrameOrientation=target_obj.init_qua)
             col_id = p.createCollisionShape(p.GEOM_SPHERE, radius=target_obj.shape[0])
+        elif(target_obj.type == "capsule"):
+            vis_id = p.createVisualShape(p.GEOM_CAPSULE, radius=target_obj.shape[0],length=target_obj.shape[1],rgbaColor=target_obj.rgba,visualFrameOrientation=target_obj.init_qua)
+            col_id = p.createCollisionShape(p.GEOM_CAPSULE, radius=target_obj.shape[0],length=target_obj.shape[1])
         elif(target_obj.type == "mesh"):
             vis_id = p.createVisualShape(p.GEOM_MESH, fileName=target_obj.shape[0],meshScale=target_obj.scale,visualFrameOrientation=target_obj.init_qua)
             col_id = p.createCollisionShape(p.GEOM_MESH, fileName=target_obj.shape[0],meshScale=target_obj.scale)

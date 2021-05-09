@@ -1,19 +1,5 @@
 <?xml version="1.0" ?>
 <robot name="">
-    <link name="base_link">
-      <inertial>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <mass value="0.1"/>
-        <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
-      </inertial>
-    </link>
-
-    <joint name="base_to_torso" type="fixed">
-      <parent link="base_link"/>
-      <child link="torso"/>
-      <origin rpy="0 0 0" xyz="0 0 1.0"/>
-    </joint>
-
 	<link name="torso">
 		<inertial>
 			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
@@ -26,15 +12,6 @@
 				<sphere radius="0.25000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
-			<geometry>
-				<sphere radius="0.25000"/>
-			</geometry>
-			<material name="red">
-				<color rgba="1.0 0. 0. 0.9"/>
-			</material>
-		</visual>
 	</link>
 	<link name="front_left_leg">
 		<inertial>
@@ -48,12 +25,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.10000 0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_3">
 		<inertial>
@@ -74,12 +45,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.10000 0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_5">
 		<inertial>
@@ -100,12 +65,6 @@
 				<cylinder length="0.56569" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.20000 0.20000 0.00000"/>
-			<geometry>
-				<cylinder length="0.56569" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="front_right_leg">
 		<inertial>
@@ -119,12 +78,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="-1.57080 -0.78540 0.78540" xyz="-0.10000 0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_8">
 		<inertial>
@@ -145,12 +98,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="-1.57080 -0.78540 0.78540" xyz="-0.10000 0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_10">
 		<inertial>
@@ -171,12 +118,6 @@
 				<cylinder length="0.56569" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="-1.57080 -0.78540 0.78540" xyz="-0.20000 0.20000 0.00000"/>
-			<geometry>
-				<cylinder length="0.56569" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="left_back_leg">
 		<inertial>
@@ -190,12 +131,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="1.57080 -0.78540 -0.78540" xyz="-0.10000 -0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_13">
 		<inertial>
@@ -216,12 +151,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="1.57080 -0.78540 -0.78540" xyz="-0.10000 -0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_15">
 		<inertial>
@@ -242,12 +171,6 @@
 				<cylinder length="0.56569" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="1.57080 -0.78540 -0.78540" xyz="-0.20000 -0.20000 0.00000"/>
-			<geometry>
-				<cylinder length="0.56569" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="right_back_leg">
 		<inertial>
@@ -261,12 +184,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="1.57080 0.78540 0.78540" xyz="0.10000 -0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_18">
 		<inertial>
@@ -287,12 +204,6 @@
 				<cylinder length="0.28284" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="1.57080 0.78540 0.78540" xyz="0.10000 -0.10000 0.00000"/>
-			<geometry>
-				<cylinder length="0.28284" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<link name="link0_20">
 		<inertial>
@@ -313,12 +224,6 @@
 				<cylinder length="0.56569" radius="0.08000"/>
 			</geometry>
 		</collision>
-		<visual>
-			<origin rpy="1.57080 0.78540 0.78540" xyz="0.20000 -0.20000 0.00000"/>
-			<geometry>
-				<cylinder length="0.56569" radius="0.08000"/>
-			</geometry>
-		</visual>
 	</link>
 	<joint name="jointfix_2_0" type="fixed">
 		<parent link="torso"/>
@@ -330,7 +235,6 @@
 	<joint name="hip_1" type="revolute">
 		<parent link="front_left_leg"/>
 		<child link="link0_3"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.20000 0.20000 0.00000"/>
 		<axis xyz="0.00000 0.00000 1.00000"/>
@@ -345,7 +249,6 @@
 	<joint name="ankle_1" type="revolute">
 		<parent link="aux_1"/>
 		<child link="link0_5"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.20000 0.20000 0.00000"/>
 		<axis xyz="-1.00000 1.00000 0.00000"/>
@@ -367,7 +270,6 @@
 	<joint name="hip_2" type="revolute">
 		<parent link="front_right_leg"/>
 		<child link="link0_8"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="-0.20000 0.20000 0.00000"/>
 		<axis xyz="0.00000 0.00000 1.00000"/>
@@ -382,7 +284,6 @@
 	<joint name="ankle_2" type="revolute">
 		<parent link="aux_2"/>
 		<child link="link0_10"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="-0.20000 0.20000 0.00000"/>
 		<axis xyz="1.00000 1.00000 0.00000"/>
@@ -404,7 +305,6 @@
 	<joint name="hip_3" type="revolute">
 		<parent link="left_back_leg"/>
 		<child link="link0_13"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="-0.20000 -0.20000 0.00000"/>
 		<axis xyz="0.00000 0.00000 1.00000"/>
@@ -419,7 +319,6 @@
 	<joint name="ankle_3" type="revolute">
 		<parent link="aux_3"/>
 		<child link="link0_15"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="-0.20000 -0.20000 0.00000"/>
 		<axis xyz="-1.00000 1.00000 0.00000"/>
@@ -441,7 +340,6 @@
 	<joint name="hip_4" type="revolute">
 		<parent link="right_back_leg"/>
 		<child link="link0_18"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.20000 -0.20000 0.00000"/>
 		<axis xyz="0.00000 0.00000 1.00000"/>
@@ -456,7 +354,6 @@
 	<joint name="ankle_4" type="revolute">
 		<parent link="aux_4"/>
 		<child link="link0_20"/>
-        <limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
 		<dynamics damping="1.0" friction="0.0001"/>
 		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.20000 -0.20000 0.00000"/>
 		<axis xyz="1.00000 1.00000 0.00000"/>
