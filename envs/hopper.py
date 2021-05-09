@@ -68,7 +68,7 @@ class Hopper():
         # self.x_threshold = 2.4
 
 
-        self.model = UrdfWrapper("urdf/hopper.urdf").model
+        self.model = UrdfWrapper("urdf/hopper_link_0_1.urdf").model
         # self.model = UrdfWrapper("urdf/two_link_arm.urdf").model
         self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         self.render_flag = render_flag
@@ -165,5 +165,5 @@ class Hopper():
 
 if __name__ == '__main__':
     hopper = Hopper()
-    time.sleep(10)
+    time.sleep(100)
     hopper.render()

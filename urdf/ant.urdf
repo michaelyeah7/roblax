@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<robot name="">
+
+    <link name="base_link">
+      <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="0.1"/>
+        <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+      </inertial>
+    </link>
+
+    <joint name="base_to_slide" type="fixed">
+      <parent link="base_link"/>
+      <child link="torso"/>
+      <origin rpy="0 0 0" xyz="0 0 1.0"/>
+    </joint>
+
+	<link name="torso">
+		<inertial>
+			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+			<mass value="65.44985"/>
+			<inertia ixx="1.63625" ixy="0" ixz="0" iyy="1.63625" iyz="0" izz="1.63625"/>
+		</inertial>
+		<collision>
+			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+			<geometry>
+				<sphere radius="0.25000"/>
+			</geometry>
+		</collision>
+	</link>
+	<link name="front_left_leg">
+		<inertial>
+			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.10000 0.10000 0.00000"/>
+			<mass value="7.83155"/>
+			<inertia ixx="0.17951" ixy="0" ixz="0" iyy="0.17951" iyz="0" izz="0.29219"/>
+		</inertial>
+		<collision>
+			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.10000 0.10000 0.00000"/>
+			<geometry>
+				<cylinder length="0.28284" radius="0.08000"/>
+			</geometry>
+		</collision>
+		<visual>
+			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.10000 0.10000 0.00000"/>
+			<geometry>
+				<cylinder length="0.28284" radius="0.08000"/>
+			</geometry>
+		</visual>
+	</link>
+
+	<link name="link0_3">
+		<inertial>
+			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+			<mass value="0.00000"/>
+			<inertia ixx="0.00000" ixy="0" ixz="0" iyy="0.00000" iyz="0" izz="0.00000"/>
+		</inertial>
+	</link>
+	<link name="aux_1">
+		<inertial>
+			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.10000 0.10000 0.00000"/>
+			<mass value="7.83155"/>
+			<inertia ixx="0.17951" ixy="0" ixz="0" iyy="0.17951" iyz="0" izz="0.29219"/>
+		</inertial>
+		<collision>
+			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.10000 0.10000 0.00000"/>
+			<geometry>
+				<cylinder length="0.28284" radius="0.08000"/>
+			</geometry>
+		</collision>
+		<visual>
+			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.10000 0.10000 0.00000"/>
+			<geometry>
+				<cylinder length="0.28284" radius="0.08000"/>
+			</geometry>
+		</visual>
+	</link>
+	<link name="link0_5">
+		<inertial>
+			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+			<mass value="0.00000"/>
+			<inertia ixx="0.00000" ixy="0" ixz="0" iyy="0.00000" iyz="0" izz="0.00000"/>
+		</inertial>
+	</link>
+	<link name="front_left_foot">
+		<inertial>
+			<origin rpy="0.00000 -0.00000 0.00000" xyz="0.20000 0.20000 0.00000"/>
+			<mass value="13.51844"/>
+			<inertia ixx="0.56813" ixy="0" ixz="0" iyy="0.56813" iyz="0" izz="1.02090"/>
+		</inertial>
+		<collision>
+			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.20000 0.20000 0.00000"/>
+			<geometry>
+				<cylinder length="0.56569" radius="0.08000"/>
+			</geometry>
+		</collision>
+		<visual>
+			<origin rpy="-1.57080 0.78540 -0.78540" xyz="0.20000 0.20000 0.00000"/>
+			<geometry>
+				<cylinder length="0.56569" radius="0.08000"/>
+			</geometry>
+		</visual>
+	</link>
+
+	<joint name="jointfix_2_0" type="fixed">
+		<parent link="torso"/>
+		<child link="front_left_leg"/>
+		<dynamics damping="1.0" friction="0.0001"/>
+		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+		<axis xyz="0.00000 0.00000 0.00000"/>
+	</joint>
+
+	<joint name="hip_1" type="revolute">
+		<parent link="front_left_leg"/>
+		<child link="link0_3"/>
+		<limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
+		<dynamics damping="1.0" friction="0.0001"/>
+		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.20000 0.20000 0.00000"/>
+		<axis xyz="0.00000 0.00000 1.00000"/>
+	</joint>
+
+	<joint name="jointfix_1_3" type="fixed">
+		<parent link="link0_3"/>
+		<child link="aux_1"/>
+		<dynamics damping="1.0" friction="0.0001"/>
+		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+		<axis xyz="0.00000 0.00000 0.00000"/>
+	</joint>
+	<joint name="ankle_1" type="revolute">
+		<parent link="aux_1"/>
+		<child link="link0_5"/>
+		<limit effort="1000.0" lower="-0.50000" upper="0.50000" velocity="0.5"/>
+		<dynamics damping="1.0" friction="0.0001"/>
+		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.20000 0.20000 0.00000"/>
+		<axis xyz="1.00000 1.00000 0.00000"/>
+	</joint>
+	<joint name="jointfix_0_5" type="fixed">
+		<parent link="link0_5"/>
+		<child link="front_left_foot"/>
+		<dynamics damping="1.0" friction="0.0001"/>
+		<origin rpy="0.00000 -0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+		<axis xyz="0.00000 0.00000 0.00000"/>
+	</joint>
+</robot>
