@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import jax
 from jax import lax
-from envs import Qaudrupedal
+from envs._quadrupedal import Qaudrupedal
 from agents import Deep_Qaudrupedal
 import copy
 import pickle
