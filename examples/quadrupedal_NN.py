@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import jax
 from jax import lax
 from envs._quadrupedal import Qaudrupedal
-from agents import Deep_Qaudrupedal
+from agents._deep_quadrupedal import Deep_Qaudrupedal
 import copy
 import pickle
 from time import gmtime, strftime 

@@ -40,10 +40,15 @@ from jaxRBDL.Contact.SolveContactLCP import SolveContactLCP
 from jaxRBDL.Kinematics.CalcBodyToBaseCoordinates import CalcBodyToBaseCoordinates
 
 
+from jbdl.rbdl.dynamics.state_fun_ode import dynamics_fun_core, dynamics_fun
+from jbdl.rbdl.contact.detect_contact import detect_contact
+from jax import device_put
+
 class Hopper():
 
     def __init__(self, reward_fn=None, seed=0, render_flag=False):
         self.t = 0.01  # seconds between state updates
+        self.time = 0.
         self.kinematics_integrator = "euler"
         self.viewer = None
         self.target = jnp.array([0,0,0,0,0])
@@ -55,12 +60,36 @@ class Hopper():
         # self.x_threshold = 2.4
 
 
-        self.model = UrdfWrapper("urdf/hopper.urdf").model
+        model = UrdfWrapper("urdf/hopper.urdf").model
         # self.model = UrdfWrapper("urdf/two_link_arm.urdf").model
 
-        model = UrdfWrapper("urdf/laikago/laikagolow.urdf").model
+        # model = UrdfWrapper("urdf/laikago/laikagolow.urdf").model
         model["jtype"] = jnp.asarray(model["jtype"])
         model["parent"] = jnp.asarray(model["parent"])
+        # model["H"] = CompositeRigidBodyAlgorithm(model, q)
+        # model["C"] = InverseDynamics(model, q, qdot, jnp.zeros((NB, 1)))
+        # model["Hinv"] = inv(model["H"])
+        model["nf"] = 2
+
+        contact_cond = dict()
+        contact_cond["contact_pos_lb"] = jnp.array([0.0001, 0.0001, 0.0001]).reshape(-1, 1)
+        contact_cond["contact_pos_ub"] = jnp.array([0.0001, 0.0001, 0.0001]).reshape(-1, 1)
+        contact_cond["contact_vel_lb"] = jnp.array([-0.05, -0.05, -0.05]).reshape(-1, 1)
+        contact_cond["contact_vel_ub"] = jnp.array([0.01, 0.01, 0.01]).reshape(-1, 1)
+        contact_cond["contact_force_lb"] = np.array([[-1000.0], [-1000.0], [0.]]).reshape(-1, 1)
+        contact_cond["contact_force_ub"] = np.array([[1000.0], [1000.0], [3000.0]]).reshape(-1, 1)
+
+        model["contact_cond"] = contact_cond
+        # _model["contact_cond"] = contact_cond
+        model["contactpoint"] = [np.array([[0.],[0.],[0]])]
+        model["idcontact"] = [3]
+        model["NC"] = 1
+        # _model["idcontact"] = jnp.array([2]).reshape(-1, 1)
+
+        # model['tau'] = torque 
+        model['ST'] = jnp.zeros((3,)) # useless
+
+        self.model = model
 
         self.osim = ObdlSim(self.model,dt=self.t,vis=True)
         self.render_flag = render_flag
@@ -78,88 +107,69 @@ class Hopper():
             # print("torque",torque)
 
 
-            _X = jnp.hstack((q,qdot))
-            _model = self.model
-            _model['tau'] = torque 
-            _model['ST'] = jnp.zeros((3,)) # useless
+            X = jnp.hstack((q,qdot))
+            x = X
+            model = self.model
 
-            NB = int(_model["NB"])
-            NC = int(_model["NC"])
-            ST = _model["ST"]
 
+            NB = int(model["NB"])
+            NC = int(model["NC"])
             # Get q qdot tau
-            q = _X[0:NB]
-            qdot = _X[NB: 2 * NB]
-            tau = _model["tau"]
+            q = X[0:NB]
+            qdot = X[NB: 2 * NB]
 
-
+            model["tau"] = torque
             # Calcualte H C 
-            model["H"] = CompositeRigidBodyAlgorithm(model, q)
-            model["C"] = InverseDynamics(model, q, qdot, jnp.zeros((NB, 1)))
-            model["Hinv"] = inv(model["H"])
-            _model["nf"] = 2
-
-
-            contact_cond = dict()
-            contact_cond["contact_pos_lb"] = jnp.array([0.0001, 0.0001, 0.0001]).reshape(-1, 1)
-            contact_cond["contact_pos_ub"] = jnp.array([0.0001, 0.0001, 0.0001]).reshape(-1, 1)
-            contact_cond["contact_vel_lb"] = jnp.array([-0.05, -0.05, -0.05]).reshape(-1, 1)
-            contact_cond["contact_vel_ub"] = jnp.array([0.01, 0.01, 0.01]).reshape(-1, 1)
-            
+       
             #forward dynamics
-            T = self.t
-            contact_force = dict()
-
-            model["contact_cond"] = contact_cond
-
+            # T = self.t
+            
             # Calculate contact force in joint space
             # flag_contact = DetectContact(model, q, qdot, contact_cond)
-            flag_contact_tuple = DetectContact(model, q, qdot)
-            flag_contact_list = []
-            flag_contact_list.append(flag_contact_tuple)
-            print("flag_contact_list",flag_contact_list)
-            flag_contact = jnp.array(flag_contact_list).flatten()
-            print("flag_contact",flag_contact)
-            # print("In Dynamics!!!")
-            # print(flag_contact)
-            if jnp.sum(flag_contact) !=0: 
-                # lambda, fqp, fpd] = SolveContactLCP(q, qdot, tau, flag_contact);
-                # lam, fqp, fc, fcqp, fcpd = CalcContactForceDirect(_model, q, qdot, tau, flag_contact, 2)
-                lam, fqp, fc, fcqp, fcpd = SolveContactLCP(_model, q, qdot, tau, flag_contact,0.1)
-                contact_force["fc"] = fc
-                contact_force["fcqp"] = fcqp
-                contact_force["fcpd"] = fcpd
-            else:
-                # print("No Conatact")
-                lam = jnp.zeros((NB, 1))
-                contact_force["fc"] = jnp.zeros((3*NC, 1))
-                contact_force["fcqp"] = jnp.zeros((3*NC, 1))
-                contact_force["fcpd"] = jnp.zeros((3*NC, 1))
+            # flag_contact_tuple = detect_contact(model, q, qdot)
+            # flag_contact_list = []
+            # flag_contact_list.append(flag_contact_tuple)
+            # flag_contact = jnp.array(flag_contact_list).flatten()
+            # print("flag_contact",flag_contact)
+
+            contact_force = dict()
+            xdot = dynamics_fun(self.time, x, model, contact_force)
+            print("xdot",xdot)
+            x = xdot + x
+            q, qdot = jnp.split(x,2)
+
+            self.time += self.t
+
+            # # print("In Dynamics!!!")
+            # if jnp.sum(flag_contact) !=0: 
+            #     # lambda, fqp, fpd] = SolveContactLCP(q, qdot, tau, flag_contact);
+            #     # lam, fqp, fc, fcqp, fcpd = CalcContactForceDirect(_model, q, qdot, tau, flag_contact, 2)
+            #     lam, fqp, fc, fcqp, fcpd = SolveContactLCP(_model, q, qdot, tau, flag_contact,0.1)
+            #     contact_force["fc"] = fc
+            #     contact_force["fcqp"] = fcqp
+            #     contact_force["fcpd"] = fcpd
+            # else:
+            #     # print("No Conatact")
+            #     lam = jnp.zeros((NB, 1))
+            #     contact_force["fc"] = jnp.zeros((3*NC, 1))
+            #     contact_force["fcqp"] = jnp.zeros((3*NC, 1))
+            #     contact_force["fcpd"] = jnp.zeros((3*NC, 1))
 
 
-            # Forward dynamics
-            Tau = tau + lam
-            qddot = ForwardDynamics(model, q, qdot, Tau).flatten()
-            input = (self.model, q, qdot, torque)
-            #ForwardDynamics return shape(NB, 1) array
-            qddot = ForwardDynamics(*input)
-            qddot = qddot.flatten()
-            # qddot = jnp.clip(qddot,0,0.5)
-            # print("qddot",qddot)
+            # # Forward dynamics
+            # Tau = tau + lam
+            # qddot = ForwardDynamics(model, q, qdot, Tau).flatten()
+            # input = (self.model, q, qdot, torque)
+            # #ForwardDynamics return shape(NB, 1) array
+            # qddot = ForwardDynamics(*input)
+            # qddot = qddot.flatten()
 
-             
-            # for i in range(2,len(q)-1):
-            #     qdot = jax.ops.index_add(qdot, i, self.tau * qddot[i])
-            #     q = jax.ops.index_add(q, i, self.tau * qdot[i]) 
+            # qdot_hat = qdot + qddot * self.t
+            # q_hat = q + qdot * self.t
 
-            qdot_hat = qdot + qddot * self.t
-            q_hat = q + qdot * self.t
-            # qdot = jnp.zeros(7) 
-            # print("q[5]",q[5])
-            # print("qddot",qddot)
-            # print("qdot",qdot)
 
-            return jnp.array([q_hat, qdot_hat]).flatten()
+            # return jnp.array([q_hat, qdot_hat]).flatten()
+            return jnp.array([q, qdot]).flatten()
         
         self.dynamics = _dynamics
 
@@ -225,8 +235,9 @@ class Hopper():
 if __name__ == '__main__':
     hopper = Hopper()
     action = jnp.array([0.0])
-    while True:
+    for i in range(10):
+        print("timestep i",i)
         hopper.step(hopper.state, action)
-        print("hopper.state",hopper.state)
+        # print("hopper.state",hopper.state)
         time.sleep(0.1)
         hopper.render()

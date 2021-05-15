@@ -5,6 +5,8 @@ from jaxRBDL.Contact.CalcContactJacobian import CalcContactJacobian
 from jaxRBDL.Contact.CalcContactJdotQdot import CalcContactJdotQdot
 from jaxRBDL.Contact.CalcContactForcePD import CalcContactForcePD
 from jaxRBDL.Contact.GetContactForce import GetContactForce
+import jax.numpy as jnp
+
 
 def GetA(mu: float, nf: int)->np.ndarray:
     """Set friction constraint.
@@ -111,7 +113,9 @@ def SolveContactLCP(model: dict, q: np.ndarray, qdot: np.ndarray, tau: np.ndarra
 
     if nf == 2:
         contact_force_lb = contact_force_lb[[0, 2]]
+        # contact_force_lb = jnp.array([contact_force_lb[0],contact_force_lb[2]])
         contact_force_ub = contact_force_ub[[0, 2]]
+        # contact_force_ub = jnp.array([contact_force_ub[0],contact_force_ub[2]])
 
     ncp = 0
     for i in range(NC):

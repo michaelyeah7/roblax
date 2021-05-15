@@ -224,10 +224,12 @@ def solve_contact_lcp_core(Xtree, q, qdot, contactpoint, H, tau, C, contact_forc
     Jc = calc_contact_jacobian_core(Xtree, q, contactpoint, idcontact, flag_contact, parent, jtype, jaxis, NB, NC, nf)
     JcdotQdot = calc_contact_jdot_qdot_core(Xtree, q, qdot, contactpoint, idcontact, flag_contact, parent, jtype, jaxis, NB, NC, nf)
     contact_force_lb = jnp.reshape(contact_force_lb, (-1,))
-    contact_force_ub = jnp.reshape(contact_force_ub, (-1,))
+    contact_force_ub = jnp.reshape(contact_force_ub, (-1,))    
     if nf == 2:
         contact_force_lb = contact_force_lb[[0, 2]]
         contact_force_ub = contact_force_ub[[0, 2]]
+        # contact_force_lb = contact_force_lb[jnp.array([0, 2])]
+        # contact_force_ub = contact_force_ub[jnp.array([0, 2])]
     tau = jnp.reshape(tau, (-1, 1))
     C = jnp.reshape(C, (-1, 1))
     M = jnp.matmul(Jc, jnp.linalg.solve(H, jnp.transpose(Jc)))
@@ -297,6 +299,7 @@ def solve_contact_lcp(model: dict, q: np.ndarray, qdot: np.ndarray, tau: np.ndar
         contact_force_ub = contact_force_ub[[0, 2]]
 
     ncp = 0
+    print("flag_contact_in lcpsolve",flag_contact)
     for i in range(NC):
         if flag_contact[i]!=0:
             ncp = ncp + 1

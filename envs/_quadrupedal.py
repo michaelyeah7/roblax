@@ -2,7 +2,7 @@ from Simulator.UrdfWrapper import UrdfWrapper
 from Simulator.ObdlRender import ObdlRender
 from Simulator.ObdlSim import ObdlSim
 from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
-from envs.core import Env
+# from envs.core import Env
 import gym
 import jax
 import jax.numpy as jnp
@@ -16,9 +16,9 @@ from jaxRBDL.Contact.CalcContactForceDirect import CalcContactForceDirect
 from jaxRBDL.Contact.SolveContactLCP import SolveContactLCP
 # from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics
 from jaxRBDL.Kinematics.CalcBodyToBaseCoordinates import CalcBodyToBaseCoordinates
+import numpy as np
 
-
-class Qaudrupedal(Env):
+class Qaudrupedal():
     """
     Description:
         A quadrupedal robot(UNITREE) environment. The robot has totally 14 joints,
@@ -95,12 +95,17 @@ class Qaudrupedal(Env):
             contact_cond["contact_pos_ub"] = jnp.array([0.0001, 0.0001, 0.0001]).reshape(-1, 1)
             contact_cond["contact_vel_lb"] = jnp.array([-0.05, -0.05, -0.05]).reshape(-1, 1)
             contact_cond["contact_vel_ub"] = jnp.array([0.01, 0.01, 0.01]).reshape(-1, 1)
+            contact_cond["contact_force_lb"] = np.array([[-1000.0], [-1000.0], [0.]]).reshape(-1, 1)
+            contact_cond["contact_force_ub"] = np.array([[1000.0], [1000.0], [3000.0]]).reshape(-1, 1)
             
             #forward dynamics
             T = self.dt
             contact_force = dict()
 
             model["contact_cond"] = contact_cond
+            model["nf"] = 3
+            _model["contact_cond"] = contact_cond
+            _model["nf"] = 2
 
             # Calculate contact force in joint space
             # flag_contact = DetectContact(model, q, qdot, contact_cond)

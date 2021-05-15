@@ -74,12 +74,12 @@ def dynamics_fun(t: float, X: np.ndarray, model: dict, contact_force: dict)->np.
 
     # Calculate flag_contact
     flag_contact = detect_contact(model, q, qdot)
+    print("flag_contact",flag_contact)
     rankJc = int(np.sum( [1 for item in flag_contact if item != 0]) * model["nf"])
     ncp = 0
     for i in range(NC):
         if flag_contact[i]!=0:
             ncp = ncp + 1
-
 
 
 

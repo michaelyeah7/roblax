@@ -19,13 +19,13 @@ import jax.numpy as jnp
 import numpy as np
 import functools
 
-from agents.core import Agent
-from envs.core import Env
-from utils import Random
+# from agents.core import Agent
+# from envs.core import Env
+# from utils import Random
 import numpy.random as npr
 
 # generic deep controller for 1-dimensional discrete non-negative action space
-class Deep_Qaudrupedal(Agent):
+class Deep_Qaudrupedal():
     """
     Generic deep controller that uses zero-order methods to train on an
     environment.
@@ -60,7 +60,7 @@ class Deep_Qaudrupedal(Agent):
         self.lr = learning_rate
         self.gamma = gamma
 
-        self.random = Random(seed)
+        # self.random = Random(seed)
 
         self.d_a_d_w = jax.grad(self.__call__,argnums=1)
         self.reset()
@@ -84,12 +84,12 @@ class Deep_Qaudrupedal(Agent):
         param_scale = 0.1
         self.params = init_random_params(param_scale, layer_sizes)
 
-        self.W = jax.random.uniform(
-            self.random.generate_key(),
-            shape=(self.env_state_size, len(self.action_space)),
-            minval=0,
-            maxval=1,
-        )
+        # self.W = jax.random.uniform(
+        #     self.random.generate_key(),
+        #     shape=(self.env_state_size, len(self.action_space)),
+        #     minval=0,
+        #     maxval=1,
+        # )
 
         # Keep stats for final print of graph
         self.episode_rewards = []
@@ -97,7 +97,7 @@ class Deep_Qaudrupedal(Agent):
         self.current_episode_length = 0
         self.current_episode_reward = 0
         self.episode_rewards = jnp.zeros(self.max_episode_length)
-        self.episode_grads = jnp.zeros((self.max_episode_length, self.W.shape[0], self.W.shape[1]))
+        # self.episode_grads = jnp.zeros((self.max_episode_length, self.W.shape[0], self.W.shape[1]))
         
         # dummy values for attrs, needed to inform scan of traced shapes
         self.state = jnp.zeros((self.env_state_size,))
