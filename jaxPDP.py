@@ -372,7 +372,7 @@ class ControlPlanning:
         self.dpolicy_de_fn = jax.jit(jax.jacfwd(self.policy_fn,argnums=2))
     # The following are to solve PDP control and planning with polynomial control policy
 
-    def ode_dynamics_test(self, init_curr_x, auxvar_value):
+    def ode_dynamics(self, init_curr_x, auxvar_value):
         num_steps=26
         dt = jnp.float64(0.05)
         t = jnp.linspace(0., (num_steps-1)*dt, num_steps)
@@ -416,7 +416,7 @@ class ControlPlanning:
         cost += self.final_cost_fn(state_traj[-1, :])
 
         # print("state_traj",state_traj)
-        state_traj_ode = self.ode_dynamics_test(init_curr_x, auxvar_value)
+        state_traj_ode = self.ode_dynamics(init_curr_x, auxvar_value)
         # print("state_traj_ode",state_traj_ode)
 
         traj_sol = {'state_traj': state_traj_ode,
