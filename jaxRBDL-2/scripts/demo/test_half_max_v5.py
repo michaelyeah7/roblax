@@ -35,10 +35,13 @@ NC = int(model["NC"])
 NB = int(model["NB"])
 nf = int(model["nf"])
 contact_cond = model["contact_cond"]
+print(contact_cond)
 Xtree = device_put(model["Xtree"])
 ST = model["ST"]
 contactpoint = model["contactpoint"],
+print(contactpoint)
 idcontact = tuple(model["idcontact"])
+print(idcontact)
 parent = tuple(model["parent"])
 jtype = tuple(model["jtype"])
 jaxis = xyz2int(model["jaxis"])
@@ -51,7 +54,9 @@ contact_force_ub = device_put(contact_cond["contact_force_ub"])
 contact_pos_lb = contact_cond["contact_pos_lb"]
 contact_vel_lb = contact_cond["contact_vel_lb"]
 contact_vel_ub = contact_cond["contact_vel_ub"]
-
+print(contact_vel_lb)
+print(contact_vel_ub)
+print(contact_pos_lb)
 q0 = jnp.array([0.0,  0.4125, 0.0, math.pi/6, math.pi/6, -math.pi/3, -math.pi/3])
 qdot0 = jnp.zeros((7, ))
 

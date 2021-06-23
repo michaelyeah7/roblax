@@ -54,6 +54,7 @@ class HalfCheetahRBDLEnv(gym.Env):
     # def render(self, mode='human', close=False):`
     # ...
 
+
     def close(self):
         if self.viewer:
             self.viewer.close()

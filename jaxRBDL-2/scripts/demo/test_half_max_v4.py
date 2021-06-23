@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from jbdl.rbdl.tools import plot_model
-%matplotlib inline
+#%matplotlib inline
 q = np.array([0.0,  0.4125, 0.0, math.pi/6, math.pi/6, -math.pi/3, -math.pi/3])
 fig = plt.figure()
 ax = Axes3D(fig)
