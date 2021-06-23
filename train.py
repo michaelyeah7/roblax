@@ -7,7 +7,7 @@ import torch
 import numpy as np
 
 import gym
-import gym_soccer
+import gym_rbdl
 import roboschool
 
 # import pybullet_envs
