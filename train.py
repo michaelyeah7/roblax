@@ -7,10 +7,15 @@ import torch
 import numpy as np
 
 import gym
+<<<<<<< HEAD
 from gym_rbdl.envs.half_cheetah_rbdl import HalfCheetahRBDLEnv
 
 #import gym_soccer
 #import roboschool
+=======
+import gym_rbdl
+import roboschool
+>>>>>>> a92196e9c441bf9f09d9f3daf9bad35aff395486
 
 # import pybullet_envs
 
