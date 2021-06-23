@@ -164,7 +164,7 @@ class HalfCheetahRBDLEnv(gym.Env):
         pure_args = (Xtree, I, contactpoint, u, a_grav, contact_force_lb, contact_force_ub,  contact_pos_lb, contact_vel_lb, contact_vel_ub, mu)
         next_xk = self.dynamics_step(self.xk, *pure_args)
         loss = jnp.sum((q_star[3:7] - next_xk[3:7])**2) + jnp.sum((qdot_star[3:7] - next_xk[10:14])**2)
-        reward = - loss
+        reward = - np.array(loss)
         self.xk = next_xk
         self.state = np.array(self.xk) # update jnp state
         next_state = self.state # convert back to numpy.ndarray
