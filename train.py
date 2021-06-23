@@ -8,11 +8,12 @@ import numpy as np
 
 import gym
 import gym_rbdl
-import roboschool
+#import roboschool
 
 # import pybullet_envs
 
 from PPO import PPO
+#from gym_rbdl.gym_rbdl.envs.half_cheetah_rbdl import HalfCheetahRBDLEnv
 
 
 
@@ -216,7 +217,7 @@ def train():
         current_ep_reward = 0
 
         for t in range(1, max_ep_len+1):
-
+            print(state)
             # select action with policy
             action = ppo_agent.select_action(state)
             state, reward, done, _ = env.step(action)
