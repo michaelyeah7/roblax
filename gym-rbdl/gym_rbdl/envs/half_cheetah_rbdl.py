@@ -20,6 +20,7 @@ import math
 from jax.api import jit
 from functools import partial
 from jbdl.rbdl.tools import plot_model
+from jbdl.experimental.ode.solve_ivp import solve_ivp
 
 class HalfCheetahRBDLEnv(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -118,6 +119,8 @@ class HalfCheetahRBDLEnv(gym.Env):
             y_new = jnp.hstack([q, qdot_impulse])
             return y_new
 
+        t = device_put(0.0)
+
         pure_dynamics_fun = partial(dynamics_fun, ST=ST, idcontact=idcontact, \
                 parent=parent, jtype=jtype, jaxis=jaxis, NB=NB, NC=NC, nf=nf, ncp=ncp)
 
@@ -127,14 +130,20 @@ class HalfCheetahRBDLEnv(gym.Env):
         pure_impulsive_fun =  partial(impulsive_dynamics_fun, ST=ST, idcontact=idcontact, \
             parent=parent, jtype=jtype, jaxis=jaxis, NB=NB, NC=NC, nf=nf, ncp=ncp)
 
+        
 
-        def _dynamics_step(y0, *args):
-            t_eval, sol =  integrate_dynamics(pure_dynamics_fun, y0, t_span, delta_t, pure_events_fun, pure_impulsive_fun, args=args)
-            yT = sol[-1, :]
-            return yT
+
+        def _dynamics_step(y0, *pure_args):
+            # t_eval, sol =  integrate_dynamics(pure_dynamics_fun, y0, t_span, delta_t, pure_events_fun, pure_impulsive_fun, args=args)
+            # yT = sol[-1, :]
+            t_eval = jnp.linspace(0, 2e-3, 4)
+            xk = solve_ivp(pure_dynamics_fun, y0, t_eval, pure_events_fun, pure_impulsive_fun, *pure_args)[-1, :]
+            # return yT
+            return xk
 
         u = jnp.zeros((4,))
         self.pure_args = (Xtree, I, contactpoint, u, a_grav, contact_force_lb, contact_force_ub,  contact_pos_lb, contact_vel_lb, contact_vel_ub, mu)
+        # print("pure_events",pure_events_fun(*self.pure_args))
 
         self.dynamics_step = _dynamics_step
 
@@ -163,6 +172,7 @@ class HalfCheetahRBDLEnv(gym.Env):
         Xtree, I, contactpoint, u0, a_grav, contact_force_lb, contact_force_ub, contact_pos_lb, contact_vel_lb, contact_vel_ub,mu = self.pure_args
         pure_args = (Xtree, I, contactpoint, u, a_grav, contact_force_lb, contact_force_ub,  contact_pos_lb, contact_vel_lb, contact_vel_ub, mu)
         next_xk = self.dynamics_step(self.xk, *pure_args)
+        # next_xk = solve_ivp(pure_dynamics_fun, xk, t_eval, pure_events_fun, pure_impulsive_fun, *pure_args)[-1, :]
         loss = jnp.sum((q_star[3:7] - next_xk[3:7])**2) + jnp.sum((qdot_star[3:7] - next_xk[10:14])**2)
         reward = - np.array(loss)
         self.xk = next_xk
