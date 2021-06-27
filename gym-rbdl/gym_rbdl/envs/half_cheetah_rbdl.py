@@ -182,7 +182,7 @@ class HalfCheetahRBDLEnv(gym.Env):
         return next_state, reward, done, {}
 
     def reset(self):
-        self.xk = jnp.zeros((14,)) #xk refers to jaxRBDL state
+        self.xk = jnp.array([0.2,  0.5, 0, math.pi/6, -math.pi/6, -math.pi/3, math.pi/3,0,0,0,0,0,0,0]) #xk refers to jaxRBDL state
         self.state = np.array(self.xk)
         return self.state
     ...
