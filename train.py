@@ -1,3 +1,4 @@
+# %%
 import os
 import glob
 import time
@@ -18,7 +19,7 @@ from PPO import PPO
 
 
 ################################### Training ###################################
-
+# %%
 def train():
 
     print("============================================================================================")
@@ -223,7 +224,7 @@ def train():
             state, reward, done, _ = env.step(action)
             # print("action",type(action))
             # print("state",state)
-            # print("reward",type(reward))
+            print("reward",type(reward))
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
@@ -303,7 +304,7 @@ def train():
 
 
 
-
+# %%
 if __name__ == '__main__':
 
     train()
