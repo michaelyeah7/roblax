@@ -5,6 +5,7 @@ import math
 import numpy as np
 import jax.numpy as jnp
 import os
+import jax
 
 from jbdl.rbdl.utils import ModelWrapper
 from jax import device_put
@@ -172,9 +173,14 @@ class HalfCheetahRBDLEnv(gym.Env):
         Xtree, I, contactpoint, u0, a_grav, contact_force_lb, contact_force_ub, contact_pos_lb, contact_vel_lb, contact_vel_ub,mu = self.pure_args
         pure_args = (Xtree, I, contactpoint, u, a_grav, contact_force_lb, contact_force_ub,  contact_pos_lb, contact_vel_lb, contact_vel_ub, mu)
         next_xk = self.dynamics_step(self.xk, *pure_args)
-        # next_xk = solve_ivp(pure_dynamics_fun, xk, t_eval, pure_events_fun, pure_impulsive_fun, *pure_args)[-1, :]
-        loss = jnp.sum((q_star[3:7] - next_xk[3:7])**2) + jnp.sum((qdot_star[3:7] - next_xk[10:14])**2)
-        reward = - np.array(loss)
+        next_xk = jax.ops.index_update(next_xk,3,jnp.clip(next_xk[3], 0., math.pi/3))
+        next_xk = jax.ops.index_update(next_xk,4,jnp.clip(next_xk[4], -math.pi/3, 0.))
+        next_xk = jax.ops.index_update(next_xk,5,jnp.clip(next_xk[5], -math.pi/2, -math.pi/6))
+        next_xk = jax.ops.index_update(next_xk,6,jnp.clip(next_xk[6], math.pi/6, math.pi/2))
+        # loss = jnp.sum((q_star[3:7] - next_xk[3:7])**2) + jnp.sum((qdot_star[3:7] - next_xk[10:14])**2)
+        #refer to openai cheetah gym reward setting
+        reward = np.array((next_xk[0] - self.xk[0])/2e-3 - 0.1 * jnp.square(u).sum())
+        # reward = - np.array(loss)
         self.xk = next_xk
         self.state = np.array(self.xk) # update jnp state
         next_state = self.state # convert back to numpy.ndarray

@@ -85,7 +85,7 @@ def train():
 
     #### log files for multiple runs are NOT overwritten
 
-    log_dir = "PPO_logs"
+    log_dir = "PPO_logs_forward_reward_joint_limit"
     if not os.path.exists(log_dir):
           os.makedirs(log_dir)
 
@@ -113,7 +113,7 @@ def train():
 
     run_num_pretrained = 0      #### change this to prevent overwriting weights in same env_name folder
 
-    directory = "PPO_preTrained"
+    directory = "PPO_preTrained_forward_reward_joint_limit"
     if not os.path.exists(directory):
           os.makedirs(directory)
 
