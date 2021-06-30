@@ -23,10 +23,14 @@ from functools import partial
 from jbdl.rbdl.tools import plot_model
 from jbdl.experimental.ode.solve_ivp import solve_ivp
 
+from jbdl.rbdl.tools import plot_model
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.axes3d import Axes3D
+
 class HalfCheetahRBDLEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self):
+    def __init__(self, render=True):
         action_max = np.ones(4)*10.
         self._action_space = spaces.Box(low=-action_max, high=action_max)
         observation_high = np.ones(14)*math.pi
@@ -35,6 +39,13 @@ class HalfCheetahRBDLEnv(gym.Env):
 
         self.seed()
         self.viewer = None
+
+        if (render==True):
+            plt.figure()
+            plt.ion()
+
+            fig = plt.gcf()
+            self.ax = Axes3D(fig)
 
 
         #contruct the model
@@ -169,6 +180,8 @@ class HalfCheetahRBDLEnv(gym.Env):
         q_star = jnp.array([0.0,  0.0, 0.0, math.pi/6, -math.pi/6, -math.pi/3, math.pi/3])
         qdot_star = jnp.zeros((7, ))
         u = jnp.array(action)  # convert numpy.ndarray to jnp
+        u = jnp.clip(u,-2,2)
+        print("u",u)
 
         Xtree, I, contactpoint, u0, a_grav, contact_force_lb, contact_force_ub, contact_pos_lb, contact_vel_lb, contact_vel_ub,mu = self.pure_args
         pure_args = (Xtree, I, contactpoint, u, a_grav, contact_force_lb, contact_force_ub,  contact_pos_lb, contact_vel_lb, contact_vel_ub, mu)
@@ -178,6 +191,7 @@ class HalfCheetahRBDLEnv(gym.Env):
         next_xk = jax.ops.index_update(next_xk,5,jnp.clip(next_xk[5], -math.pi/2, -math.pi/6))
         next_xk = jax.ops.index_update(next_xk,6,jnp.clip(next_xk[6], math.pi/6, math.pi/2))
         # loss = jnp.sum((q_star[3:7] - next_xk[3:7])**2) + jnp.sum((qdot_star[3:7] - next_xk[10:14])**2)
+        print("next_xk",next_xk)
         #refer to openai cheetah gym reward setting
         reward = np.array((next_xk[0] - self.xk[0])/2e-3 - 0.1 * jnp.square(u).sum())
         # reward = - np.array(loss)
@@ -199,3 +213,21 @@ class HalfCheetahRBDLEnv(gym.Env):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
+        plt.ioff()
+
+    def plt_render(self):
+        ax = self.ax
+        ax.clear()
+        plot_model(self.model, self.state[0:7], ax)
+        # fcqp = np.array([0, 0, 1, 0, 0, 1])
+        # plot_contact_force(model, xk[0:7], contact_force["fc"], contact_force["fcqp"], contact_force["fcpd"], 'fcqp', ax)
+        ax.view_init(elev=0,azim=-90)
+        ax.set_xlabel('X')
+        # ax.set_xlim(-0.3, -0.3+0.6)
+        ax.set_xlim(-0.3, -0.3+1.6)
+        ax.set_ylabel('Y')
+        ax.set_ylim(-0.15, -0.15+0.6)
+        ax.set_zlabel('Z')
+        ax.set_zlim(-0.1, -0.1+0.6)
+        ax.set_title('Frame')
+        plt.pause(1e-8)
