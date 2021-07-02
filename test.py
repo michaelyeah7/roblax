@@ -91,7 +91,7 @@ def test():
     run_num_pretrained = 0      #### set this to load a particular checkpoint num
 
 
-    directory = "PPO_preTrained_forward_reward" + '/' + env_name + '/'
+    directory = "PPO_preTrained_forward_reward_joint_limit" + '/' + env_name + '/'
     checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, run_num_pretrained)
     print("loading network from : " + checkpoint_path)
 
