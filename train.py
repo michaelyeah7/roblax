@@ -33,7 +33,8 @@ def train():
 
     has_continuous_action_space = True  # continuous action space; else discrete
 
-    max_ep_len = 1000                   # max timesteps in one episode
+    # max_ep_len = 1000                   # max timesteps in one episode
+    max_ep_len = 500 
     max_training_timesteps = int(3e6)   # break training loop if timeteps > max_training_timesteps
 
     print_freq = max_ep_len * 10        # print avg reward in the interval (in num timesteps)
@@ -221,7 +222,11 @@ def train():
             print(state)
             # select action with policy
             action = ppo_agent.select_action(state)
+            # action.clip 
             state, reward, done, _ = env.step(action)
+            # print("action",action)
+            # print("state",state)
+            # env.plt_render()
             # print("action",type(action))
             # print("state",state)
             print("reward",type(reward))
