@@ -91,7 +91,7 @@ def test():
     run_num_pretrained = 0      #### set this to load a particular checkpoint num
 
 
-    directory = "PPO_preTrained_forward_reward_joint_limit" + '/' + env_name + '/'
+    directory = "PPO_preTrained" + '/' + env_name + '/'
     checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, run_num_pretrained)
     print("loading network from : " + checkpoint_path)
 
@@ -128,8 +128,7 @@ def test():
                 # plot_contact_force(model, xk[0:7], contact_force["fc"], contact_force["fcqp"], contact_force["fcpd"], 'fcqp', ax)
                 ax.view_init(elev=0,azim=-90)
                 ax.set_xlabel('X')
-                # ax.set_xlim(-0.3, -0.3+0.6)
-                ax.set_xlim(-0.3, -0.3+1.6)
+                ax.set_xlim(-0.3, -0.3+0.6)
                 ax.set_ylabel('Y')
                 ax.set_ylim(-0.15, -0.15+0.6)
                 ax.set_zlabel('Z')
@@ -161,8 +160,5 @@ def test():
     print("============================================================================================")
 
 
-
-
 if __name__ == '__main__':
-
     test()
