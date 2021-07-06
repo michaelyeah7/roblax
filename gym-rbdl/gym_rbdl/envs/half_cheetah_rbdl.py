@@ -55,7 +55,7 @@ class HalfCheetahRBDLEnv(gym.Env):
         print("CURRENT_PATH",CURRENT_PATH)
         # SCRIPTS_PATH = os.path.dirname(CURRENT_PATH)
         # print("SCRIPTS_PATH",SCRIPTS_PATH)
-        MODEL_DATA_PATH = os.path.join(CURRENT_PATH, "envs/model_data") 
+        MODEL_DATA_PATH = os.path.join(CURRENT_PATH, "jaxRBDL-2/scripts/model_data") 
         print("MODEL_DATA_PATH",MODEL_DATA_PATH)
         mdlw = ModelWrapper()
         mdlw.load(os.path.join(MODEL_DATA_PATH, 'half_max_v1.json'))
@@ -181,24 +181,33 @@ class HalfCheetahRBDLEnv(gym.Env):
         qdot_star = jnp.zeros((7, ))
         u = jnp.array(action)  # convert numpy.ndarray to jnp
         u = jnp.clip(u,-1,1)
+        u = jnp.zeros((4,))
         # print("u",u)
 
         Xtree, I, contactpoint, u0, a_grav, contact_force_lb, contact_force_ub, contact_pos_lb, contact_vel_lb, contact_vel_ub,mu = self.pure_args
         pure_args = (Xtree, I, contactpoint, u, a_grav, contact_force_lb, contact_force_ub,  contact_pos_lb, contact_vel_lb, contact_vel_ub, mu)
         next_xk = self.dynamics_step(self.xk, *pure_args)
-        next_xk = jax.ops.index_update(next_xk,3,jnp.clip(next_xk[3], 0., math.pi/3))
-        next_xk = jax.ops.index_update(next_xk,4,jnp.clip(next_xk[4], -math.pi/3, 0.))
-        next_xk = jax.ops.index_update(next_xk,5,jnp.clip(next_xk[5], -math.pi/2, -math.pi/6))
-        next_xk = jax.ops.index_update(next_xk,6,jnp.clip(next_xk[6], math.pi/6, math.pi/2))
+        # next_xk = jax.ops.index_update(next_xk,3,jnp.clip(next_xk[3], 0., math.pi/3))
+        # next_xk = jax.ops.index_update(next_xk,4,jnp.clip(next_xk[4], -math.pi/3, 0.))
+        # next_xk = jax.ops.index_update(next_xk,5,jnp.clip(next_xk[5], -math.pi/2, -math.pi/6))
+        # next_xk = jax.ops.index_update(next_xk,6,jnp.clip(next_xk[6], math.pi/6, math.pi/2))
         # loss = jnp.sum((q_star[3:7] - next_xk[3:7])**2) + jnp.sum((qdot_star[3:7] - next_xk[10:14])**2)
-        qdot = next_xk[7:]
-        clipped_qdot = jnp.clip(qdot,-0.5,0.5)
-        next_xk = jax.ops.index_update(next_xk,jax.ops.index[7:],clipped_qdot)
+
+        # qdot = next_xk[7:]
+        # clipped_qdot = jnp.clip(qdot,-0.5,0.5)
+        # next_xk = jax.ops.index_update(next_xk,jax.ops.index[7:],clipped_qdot)
+
         # next_xk = jnp.clip(next_xk,-2,2)
         # print("next_xk",next_xk)
         #refer to openai cheetah gym reward setting
         reward = np.array((next_xk[0] - self.xk[0])/2e-3 - 0.1 * jnp.square(u).sum())
         # reward = - np.array(loss)
+
+        next_xk = np.array(next_xk)
+        next_xk[5] = -math.pi/3
+        # next_xk[5] = np.clip(next_xk[5],-math.pi/2, -math.pi/6)
+        next_xk = jnp.array(next_xk)
+
         self.xk = next_xk
         self.state = np.array(self.xk) # update jnp state
         next_state = self.state # convert back to numpy.ndarray
@@ -206,7 +215,7 @@ class HalfCheetahRBDLEnv(gym.Env):
         return next_state, reward, done, {}
 
     def reset(self):
-        self.xk = jnp.array([0.2,  0.5, 0, math.pi/6, -math.pi/6, -math.pi/3, math.pi/3,0,0,0,0,0,0,0]) #xk refers to jaxRBDL state
+        self.xk = jnp.array([0.0,  0.4125, 0, math.pi/6, -math.pi/6, -math.pi/3, math.pi/3,0,0,0,0,0,0,0]) #xk refers to jaxRBDL state
         self.state = np.array(self.xk)
         return self.state
     ...
@@ -229,7 +238,7 @@ class HalfCheetahRBDLEnv(gym.Env):
         ax.view_init(elev=0,azim=-90)
         ax.set_xlabel('X')
         # ax.set_xlim(-0.3, -0.3+0.6)
-        ax.set_xlim(-0.3, -0.3+1.6)
+        ax.set_xlim(-0.3, -0.3+0.6)
         ax.set_ylabel('Y')
         ax.set_ylim(-0.15, -0.15+0.6)
         ax.set_zlabel('Z')
