@@ -219,7 +219,7 @@ def train():
         current_ep_reward = 0
 
         for t in range(1, max_ep_len+1):
-            print(state)
+            #print(state)
             # select action with policy
             action = ppo_agent.select_action(state)
             # action.clip 
@@ -229,7 +229,7 @@ def train():
             # env.plt_render()
             # print("action",type(action))
             # print("state",state)
-            print("reward",type(reward))
+            #print("reward",type(reward))
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
