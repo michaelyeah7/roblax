@@ -187,10 +187,10 @@ class HalfCheetahRBDLEnv(gym.Env):
         Xtree, I, contactpoint, u0, a_grav, contact_force_lb, contact_force_ub, contact_pos_lb, contact_vel_lb, contact_vel_ub,mu = self.pure_args
         pure_args = (Xtree, I, contactpoint, u, a_grav, contact_force_lb, contact_force_ub,  contact_pos_lb, contact_vel_lb, contact_vel_ub, mu)
         next_xk = self.dynamics_step(self.xk, *pure_args)
-        next_xk = jax.ops.index_update(next_xk,3,jnp.clip(next_xk[3], 0., math.pi/3))
-        next_xk = jax.ops.index_update(next_xk,4,jnp.clip(next_xk[4], -math.pi/3, 0.))
-        next_xk = jax.ops.index_update(next_xk,5,jnp.clip(next_xk[5], -math.pi/2, -math.pi/6))
-        next_xk = jax.ops.index_update(next_xk,6,jnp.clip(next_xk[6], math.pi/6, math.pi/2))
+        # next_xk = jax.ops.index_update(next_xk,3,jnp.clip(next_xk[3], 0., math.pi/3))
+        # next_xk = jax.ops.index_update(next_xk,4,jnp.clip(next_xk[4], -math.pi/3, 0.))
+        # next_xk = jax.ops.index_update(next_xk,5,jnp.clip(next_xk[5], -math.pi/2, -math.pi/6))
+        # next_xk = jax.ops.index_update(next_xk,6,jnp.clip(next_xk[6], math.pi/6, math.pi/2))
         # loss = jnp.sum((q_star[3:7] - next_xk[3:7])**2) + jnp.sum((qdot_star[3:7] - next_xk[10:14])**2)
 
         # qdot = next_xk[7:]
@@ -221,7 +221,6 @@ class HalfCheetahRBDLEnv(gym.Env):
     ...
     # def render(self, mode='human', close=False):`
     # ...
-
 
     def close(self):
         if self.viewer:

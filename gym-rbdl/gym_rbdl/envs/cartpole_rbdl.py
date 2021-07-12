@@ -24,7 +24,7 @@ class CartpoleRBDLEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, render=True):
-        action_max = np.ones(1)*10.
+        action_max = np.ones(1)*100.
         self._action_space = spaces.Box(low=-action_max, high=action_max)
         observation_high = np.ones(4)*math.pi
         observation_low = np.zeros(4)
@@ -33,9 +33,12 @@ class CartpoleRBDLEnv(gym.Env):
         self.seed()
         self.viewer = None
 
-        self.model = UrdfWrapper("urdf/inverted pendulum_link1_1.urdf").model
-
         self.tau = 0.02
+        # self.model = UrdfWrapper("urdf/inverted pendulum_link1_1.urdf").model
+        self.model = UrdfWrapper("urdf/cartpole_add_base.urdf").model
+        self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
+
+        
         self.l = 4.0
 
     @property
@@ -96,8 +99,13 @@ class CartpoleRBDLEnv(gym.Env):
         return next_state, reward, done, {}
 
     def reset(self):
-        self.state = np.zeros(4)
+        self.state = np.array([0., 0., 3.14, 0.])
         return self.state
+
+    def osim_render(self):
+        q = [0,0,self.state[0],self.state[2]]
+        self.osim.step_theta(q)
+        
 
     def close(self):
         if self.viewer:

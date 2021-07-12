@@ -2,8 +2,8 @@ import numpy as np
 import json
 from Simulator.UrdfReader import URDF
 from Simulator.UrdfUtils import transform_origin,rpy_to_matrix
-from jaxRBDL.Math.SpatialTransform import SpatialTransform
-from jaxRBDL.Model.RigidBodyInertia import RigidBodyInertia
+from jbdl.rbdl.math.spatial_transform import spatial_transform
+from jbdl.rbdl.model.rigid_body_inertia import rigid_body_inertia
 import jax.numpy as jnp
 import numpy as np
 
@@ -244,8 +244,8 @@ def load_urdf(file_path):
         link_intertia =  robot.links[i].inertial.inertia
         link_com = transform_origin(robot.links[i].inertial.origin)[0] # defaul rpy in link is equal to 0,0,0
         #tranform
-        tree_element = SpatialTransform(jnp.asarray(rot_matrix),jnp.asarray(trans_matrix))
-        I_element = RigidBodyInertia(link_mass,jnp.asarray(link_com),jnp.asarray(link_intertia))
+        tree_element = spatial_transform(jnp.asarray(rot_matrix),jnp.asarray(trans_matrix))
+        I_element = rigid_body_inertia(link_mass,jnp.asarray(link_com),jnp.asarray(link_intertia))
         #build tree
         X_tree.append(np.asarray(tree_element))
         I.append(np.asarray(I_element))

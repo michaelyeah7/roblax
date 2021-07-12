@@ -1,4 +1,3 @@
-# %%
 import os
 import glob
 import time
@@ -14,12 +13,11 @@ import gym_rbdl
 # import pybullet_envs
 
 from PPO import PPO
-#from gym_rbdl.gym_rbdl.envs.half_cheetah_rbdl import HalfCheetahRBDLEnv
 
 
 
 ################################### Training ###################################
-# %%
+
 def train():
 
     print("============================================================================================")
@@ -29,7 +27,8 @@ def train():
 
     # env_name = "RoboschoolHalfCheetah-v1"
     # env_name = "jbdl_half_cheetah-v0"
-    env_name = "jbdl_half_cheetah-v0"
+    # env_name = "jbdl_half_cheetah-v0"
+    env_name = "jbdl_cartpole-v1"
 
     has_continuous_action_space = True  # continuous action space; else discrete
 
@@ -219,7 +218,7 @@ def train():
         current_ep_reward = 0
 
         for t in range(1, max_ep_len+1):
-            #print(state)
+
             # select action with policy
             action = ppo_agent.select_action(state)
             # action.clip 
@@ -227,9 +226,10 @@ def train():
             # print("action",action)
             # print("state",state)
             # env.plt_render()
+            env.osim_render()
             # print("action",type(action))
             # print("state",state)
-            #print("reward",type(reward))
+            # print("reward",type(reward))
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
@@ -309,7 +309,7 @@ def train():
 
 
 
-# %%
+
 if __name__ == '__main__':
 
     train()
