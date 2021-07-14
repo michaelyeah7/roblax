@@ -48,7 +48,7 @@ print("=========================================================================
 # action_std = 0.1            # set same std for action distribution which was used while saving
 
 
-env_name = "jbdl_half_cheetah-v0"
+env_name = "jbdl_cartpole-v1"
 has_continuous_action_space = True
 max_ep_len = 1000           # max timesteps in one episode
 action_std = 0.1            # set same std for action distribution which was used while saving
@@ -71,7 +71,6 @@ lr_critic = 0.001           # learning rate for critic
 
 
 env = gym.make(env_name)
-
 # state space dimension
 state_dim = env.observation_space.shape[0]
 
@@ -103,7 +102,7 @@ print("-------------------------------------------------------------------------
 
 
 test_running_reward = 0
-
+env.osim_plot
 # %%
 %matplotlib 
 plt.figure()
