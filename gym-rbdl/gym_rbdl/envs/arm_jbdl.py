@@ -61,10 +61,10 @@ class ArmJBDLEnv(gym.Env):
 
     def __init__(self, reward_fn=None, seed=0, render_flag=False):
 
-        action_max = np.ones(1)*100.
+        action_max = np.ones(7)*100.
         self._action_space = spaces.Box(low=-action_max, high=action_max)
-        observation_high = np.ones(1)*math.pi
-        observation_low = np.zeros(1)
+        observation_high = np.ones(14)*math.pi
+        observation_low = np.zeros(14)
         self._observation_space = spaces.Box(low=observation_low, high=observation_high)
 
 
@@ -141,10 +141,12 @@ class ArmJBDLEnv(gym.Env):
         q = jnp.zeros(7)
         qdot = jnp.zeros(7)
         self.state = jnp.array([q,qdot]).flatten()
+
+        self.state =  np.array(self.state)
         return self.state
 
-    def step(self, state, action):
-        self.state = self.dynamics(state, action)
+    def step(self, action):
+        self.state = self.dynamics(self.state, action)
         q, qdot = jnp.split(self.state, 2)
 
         # done = jax.lax.cond(
@@ -163,8 +165,7 @@ class ArmJBDLEnv(gym.Env):
             done = True
             reward += 10
 
-
-
+        self.state =  np.array(self.state)
         return self.state, reward, done, {}
 
 
@@ -180,7 +181,7 @@ class ArmJBDLEnv(gym.Env):
         # reward = jnp.log((q[5]-1.57)**2) + jnp.log(jnp.sum(jnp.square(qdot - self.qdot_target)))
         # reward = jnp.linalg.norm(jnp.square(q - self.target)) + jnp.linalg.norm(jnp.square(qdot - self.qdot_target))
         reward = -costs
-
+        reward =  np.array(reward)
         return reward
 
 

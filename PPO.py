@@ -197,7 +197,6 @@ class PPO:
 
 
     def select_action(self, state):
-
         if self.has_continuous_action_space:
             with torch.no_grad():
                 state = torch.FloatTensor(state).to(device)

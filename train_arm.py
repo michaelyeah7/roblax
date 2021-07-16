@@ -221,7 +221,8 @@ def train():
 
             # select action with policy
             action = ppo_agent.select_action(state)
-            # action.clip 
+            # action.clip
+            
             state, reward, done, _ = env.step(action)
             # print("action",action)
             # print("state",state)
