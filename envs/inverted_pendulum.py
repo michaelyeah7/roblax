@@ -19,7 +19,8 @@ import jax.numpy as jnp
 # from jax.ops import index_add
 import numpy as np
 
-from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
+# from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
+from jbdl.rbdl.dynamics.forward_dynamics import  forward_dynamics, forward_dynamics_core
 # from pyRBDL.Dynamics.ForwardDynamics import ForwardDynamics
 from Simulator.UrdfWrapper import UrdfWrapper
 # from jaxRBDL.Utils.UrdfWrapper_guo import UrdfWrapper

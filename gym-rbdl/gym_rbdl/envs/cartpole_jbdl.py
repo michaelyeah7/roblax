@@ -156,11 +156,17 @@ class CartPoleJBDLEnv(gym.Env):
         def _done_fun(state, x_threshold=self.x_threshold, theta_threshold=self.theta_threshold):
             x = state[0]
             theta = state[1]
+            # done = jax.lax.cond(
+            #     (jnp.abs(x) > jnp.abs(x_threshold)) + (jnp.abs(theta) > jnp.abs(theta_threshold)),
+            #     lambda done: True,
+            #     lambda done: False,
+            #     None)
             done = jax.lax.cond(
-                (jnp.abs(x) > jnp.abs(x_threshold)) + (jnp.abs(theta) > jnp.abs(theta_threshold)),
+                (jnp.abs(x) > jnp.abs(x_threshold) ),
                 lambda done: True,
                 lambda done: False,
                 None)
+            # done = False
             return done
         
         self._done_fun = _done_fun
@@ -209,6 +215,8 @@ class CartPoleJBDLEnv(gym.Env):
                 [0, jax.random.uniform(key=self.key, shape=(),
                                        minval=-15.0/360.0*math.pi,
                                        maxval=15.0/360.0*math.pi), 0, 0])
+            self.state = jax.numpy.array(
+                [0, math.pi, 0, 0])
         else:
             if idx_list is None:
                 self.state = jax.numpy.concatenate([
