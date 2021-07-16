@@ -1,16 +1,3 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import math
 
 import gym
@@ -18,6 +5,9 @@ import jax
 import jax.numpy as jnp
 # from jax.ops import index_add
 import numpy as np
+
+from gym import error, spaces, utils
+from gym.utils import seeding
 
 # from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
 from jbdl.rbdl.dynamics.forward_dynamics import  forward_dynamics, forward_dynamics_core
@@ -31,32 +21,18 @@ import pybullet as p
 from numpy import sin, cos
 import time
 
-class Inverted_Pendulum():
-    """
-    Description:
-        A 7 link arm robot contains 6 joints. The first base_link to arm_link_0 fixed joint 
-        will be interpreted as prismatic joint (rbdl index 1) by rbdl. The remaining 5 joints are revolute
-        joints (rbdl index 0).
-
-    State:
-        array of two jnp array       
-        7-element array: Angles of 7 joints (the first one is a virtual prismatic joint transform from world to base).
-        7-element array: Angle velocity of 7 joints.
-
-    Actions:
-        7-element List: forces applied on 7 joints.
-
-    Reward:
-        Square difference between current state and target. 
-
-    Starting State:
-        All zeros.
-
-    Episode Termination:
-        At least one angle is larger than 45 degrees.
-    """
-
+class PendulumJBDLEnv(gym.Env):
     def __init__(self, reward_fn=None, seed=0, render_flag=False):
+
+
+        action_max = np.ones(1)*100.
+        self._action_space = spaces.Box(low=-action_max, high=action_max)
+        observation_high = np.ones(1)*math.pi
+        observation_low = np.zeros(1)
+        self._observation_space = spaces.Box(low=observation_low, high=observation_high)
+
+
+
         self.tau = 0.01  # seconds between state updates
         self.kinematics_integrator = "euler"
         self.viewer = None
@@ -104,6 +80,14 @@ class Inverted_Pendulum():
             return jnp.array([q, qdot]).flatten()
         
         self.dynamics = _dynamics
+
+    @property
+    def action_space(self):
+        return self._action_space
+
+    @property
+    def observation_space(self):
+        return self._observation_space
 
     def reset(self):
         # q = jax.random.uniform(
@@ -159,7 +143,7 @@ class Inverted_Pendulum():
         return reward
 
 
-    def render(self):
+    def osim_render(self):
         q, _ = jnp.split(self.state,2)
         # print("q for render",q)
         self.osim.step_theta(q)

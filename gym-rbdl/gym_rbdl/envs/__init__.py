@@ -4,3 +4,4 @@
 from gym_rbdl.envs.half_cheetah_rbdl import HalfCheetahRBDLEnv
 # from gym_rbdl.envs.cartpole_rbdl import CartpoleRBDLEnv
 from gym_rbdl.envs.cartpole_jbdl import CartPoleJBDLEnv
+from gym_rbdl.envs.pendulum_jbdl import PendulumJBDLEnv

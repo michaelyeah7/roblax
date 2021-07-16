@@ -28,7 +28,8 @@ def train():
     # env_name = "RoboschoolHalfCheetah-v1"
     # env_name = "jbdl_half_cheetah-v0"
     # env_name = "jbdl_half_cheetah-v0"
-    env_name = "jbdl_cartpole-v1"
+    # env_name = "jbdl_cartpole-v1"
+    env_name = "jbdl_pendulum-v0"
 
     has_continuous_action_space = True  # continuous action space; else discrete
 
