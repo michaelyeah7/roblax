@@ -34,3 +34,11 @@ register(
     reward_threshold=8.0,
     nondeterministic = True,
 )
+
+register(
+    id='jbdl_arm-v0',
+    entry_point='gym_rbdl.envs:ArmJBDLEnv',
+    max_episode_steps=500,
+    reward_threshold=8.0,
+    nondeterministic = True,
+)
