@@ -70,18 +70,18 @@ class Pendulum(gym.Env):
     def step(self, state, action):
         self.state = self.dynamics(state, action)
 
-        
-        reward = self.reward_func(self.state)
+        print(action)
+        reward = self.reward_func(self.state, action)
         return self.state, reward, False, {}
 
 
     
-    def reward_func(self,state):
+    def reward_func(self,state,action):
         th, thdot =  state
         # costs = angle_normalize(th) ** 2 + .1 * thdot ** 2 + .001 * (u ** 2)
         
         # costs = angle_normalize(th) ** 2 + .1 * thdot ** 2 
-        return -(jnp.sum(angle_normalize(th) ** 2 + 0.1 * thdot ** 2))
+        return -(angle_normalize(th)**2 + 0.1*thdot**2 + 0.001* action[0]**2)
         
     def reset(self):
         high = np.array([np.pi, 1])
