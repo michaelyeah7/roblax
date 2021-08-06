@@ -6,8 +6,15 @@ from jbdl.experimental.tools import Pet
 from jbdl.experimental import qpoases
 from jbdl.experimental.qpoases import QProblem
 # from jbdl.experimental.cpu_ops import lcp
-from jbdl.experimental.custom_ops.lcp import lcp
+#from jbdl.experimental.custom_ops.lcp import lcp
+# from jbdl.experimental.custom_ops.lcp_gpu import lcp_gpu
 import numpy as np
+from jax.lib import xla_bridge as xb
+if xb.get_backend().platform == 'gpu':
+    from jbdl.experimental.custom_ops.lcp_gpu import lcp_gpu as lcp
+else:
+    from jbdl.experimental.custom_ops.lcp import lcp
+
 print(math.__name__)
 print(tools.__name__)
 print(qpoases.__name__)
