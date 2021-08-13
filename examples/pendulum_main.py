@@ -24,7 +24,7 @@ update_params = True
 save_interval = 10
 
 # Init env and agent
-env = Pendulum(render_flag=True) 
+env = Pendulum(render_flag = True) 
 hybrid_env = None
 agent = Deep_Agent(
              state_size = 2,

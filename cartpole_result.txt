@@ -1,0 +1,708 @@
+==============================================================================
+Device set to : GeForce RTX 2080 Ti
+============================================================================================
+============================================================================================
+training environment name : jbdl_cartpole-v1
+pybullet build time: Dec 23 2020 01:47:29
+/root/anaconda3/envs/nw/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+startThreads creating 1 threads.
+starting thread 0
+started thread 0 
+argc=2
+argv[0] = --unused
+argv[1] = --start_demo_name=Physics Server
+ExampleBrowserThreadFunc started
+X11 functions dynamically loaded using dlopen/dlsym OK!
+X11 functions dynamically loaded using dlopen/dlsym OK!
+glXCreateContextAttribsARB() not found ... using old-style GLX context
+Direct GLX rendering context obtained
+Making context current
+GL_VENDOR=VMware, Inc.
+GL_RENDERER=llvmpipe (LLVM 10.0.0, 256 bits)
+GL_VERSION=4.3 (Compatibility Profile) Mesa 20.0.8
+GL_SHADING_LANGUAGE_VERSION=3.30
+pthread_getconcurrency()=0
+Version = 4.3 (Compatibility Profile) Mesa 20.0.8
+Vendor = VMware, Inc.
+Renderer = llvmpipe (LLVM 10.0.0, 256 bits)
+b3Printf: Selected demo: Physics Server
+startThreads creating 1 threads.
+starting thread 0
+started thread 0 
+MotionThreadFunc thread started
+ven = VMware, Inc.
+ven = VMware, Inc.
+current logging run number for jbdl_cartpole-v1 :  1
+logging at : PPO_logs_forward_reward_joint_limit/jbdl_cartpole-v1//PPO_jbdl_cartpole-v1_log_1.csv
+save checkpoint path : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+--------------------------------------------------------------------------------------------
+max training timesteps :  3000000
+max timesteps per episode :  500
+model saving frequency : 100000 timesteps
+log frequency : 1000 timesteps
+printing average reward over episodes in last : 5000 timesteps
+--------------------------------------------------------------------------------------------
+state space dimension :  4
+action space dimension :  1
+--------------------------------------------------------------------------------------------
+Initializing a continuous action space policy
+--------------------------------------------------------------------------------------------
+starting std of action distribution :  0.6
+decay rate of std of action distribution :  0.05
+minimum std of action distribution :  0.1
+decay frequency of std of action distribution : 250000 timesteps
+--------------------------------------------------------------------------------------------
+PPO update frequency : 2000 timesteps
+PPO K epochs :  80
+PPO epsilon clip :  0.2
+discount factor (gamma) :  0.99
+--------------------------------------------------------------------------------------------
+optimizer learning rate actor :  0.0003
+optimizer learning rate critic :  0.001
+============================================================================================
+Started training at (GMT) :  2021-08-13 05:39:15
+============================================================================================
+Episode : 31 		 Timestep : 5000 		 Average Reward : -16062.85
+Episode : 125 		 Timestep : 10000 		 Average Reward : -5291.12
+Episode : 271 		 Timestep : 15000 		 Average Reward : -3393.95
+Episode : 453 		 Timestep : 20000 		 Average Reward : -2724.66
+Episode : 656 		 Timestep : 25000 		 Average Reward : -2446.76
+Episode : 863 		 Timestep : 30000 		 Average Reward : -2399.58
+Episode : 1070 		 Timestep : 35000 		 Average Reward : -2403.79
+Episode : 1279 		 Timestep : 40000 		 Average Reward : -2384.86
+Episode : 1486 		 Timestep : 45000 		 Average Reward : -2401.73
+Episode : 1693 		 Timestep : 50000 		 Average Reward : -2397.94
+Episode : 1900 		 Timestep : 55000 		 Average Reward : -2404.68
+Episode : 2109 		 Timestep : 60000 		 Average Reward : -2380.14
+Episode : 2318 		 Timestep : 65000 		 Average Reward : -2382.2
+Episode : 2524 		 Timestep : 70000 		 Average Reward : -2412.87
+Episode : 2730 		 Timestep : 75000 		 Average Reward : -2413.35
+Episode : 2938 		 Timestep : 80000 		 Average Reward : -2395.96
+Episode : 3146 		 Timestep : 85000 		 Average Reward : -2390.67
+Episode : 3351 		 Timestep : 90000 		 Average Reward : -2424.04
+Episode : 3559 		 Timestep : 95000 		 Average Reward : -2386.05
+Episode : 3767 		 Timestep : 100000 		 Average Reward : -2389.88
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  0:21:26
+--------------------------------------------------------------------------------------------
+Episode : 3976 		 Timestep : 105000 		 Average Reward : -2386.05
+Episode : 4182 		 Timestep : 110000 		 Average Reward : -2416.45
+Episode : 4391 		 Timestep : 115000 		 Average Reward : -2381.71
+Episode : 4599 		 Timestep : 120000 		 Average Reward : -2379.3
+Episode : 4809 		 Timestep : 125000 		 Average Reward : -2377.66
+Episode : 5017 		 Timestep : 130000 		 Average Reward : -2390.85
+Episode : 5226 		 Timestep : 135000 		 Average Reward : -2375.83
+Episode : 5436 		 Timestep : 140000 		 Average Reward : -2375.03
+Episode : 5643 		 Timestep : 145000 		 Average Reward : -2394.71
+Episode : 5850 		 Timestep : 150000 		 Average Reward : -2402.7
+Episode : 6059 		 Timestep : 155000 		 Average Reward : -2389.44
+Episode : 6266 		 Timestep : 160000 		 Average Reward : -2397.18
+Episode : 6474 		 Timestep : 165000 		 Average Reward : -2388.08
+Episode : 6682 		 Timestep : 170000 		 Average Reward : -2393.97
+Episode : 6889 		 Timestep : 175000 		 Average Reward : -2399.83
+Episode : 7096 		 Timestep : 180000 		 Average Reward : -2399.99
+Episode : 7307 		 Timestep : 185000 		 Average Reward : -2367.75
+Episode : 7513 		 Timestep : 190000 		 Average Reward : -2407.02
+Episode : 7722 		 Timestep : 195000 		 Average Reward : -2385.23
+Episode : 7932 		 Timestep : 200000 		 Average Reward : -2365.86
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  0:43:18
+--------------------------------------------------------------------------------------------
+Episode : 8140 		 Timestep : 205000 		 Average Reward : -2386.44
+Episode : 8347 		 Timestep : 210000 		 Average Reward : -2401.32
+Episode : 8554 		 Timestep : 215000 		 Average Reward : -2407.61
+Episode : 8759 		 Timestep : 220000 		 Average Reward : -2422.59
+Episode : 8969 		 Timestep : 225000 		 Average Reward : -2366.56
+Episode : 9178 		 Timestep : 230000 		 Average Reward : -2380.94
+Episode : 9387 		 Timestep : 235000 		 Average Reward : -2386.85
+Episode : 9596 		 Timestep : 240000 		 Average Reward : -2383.15
+Episode : 9804 		 Timestep : 245000 		 Average Reward : -2383.65
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.55
+--------------------------------------------------------------------------------------------
+Episode : 10012 		 Timestep : 250000 		 Average Reward : -2394.27
+Episode : 10221 		 Timestep : 255000 		 Average Reward : -2385.13
+Episode : 10430 		 Timestep : 260000 		 Average Reward : -2372.66
+Episode : 10639 		 Timestep : 265000 		 Average Reward : -2386.67
+Episode : 10847 		 Timestep : 270000 		 Average Reward : -2389.17
+Episode : 11056 		 Timestep : 275000 		 Average Reward : -2378.61
+Episode : 11264 		 Timestep : 280000 		 Average Reward : -2392.93
+Episode : 11472 		 Timestep : 285000 		 Average Reward : -2391.65
+Episode : 11679 		 Timestep : 290000 		 Average Reward : -2402.44
+Episode : 11887 		 Timestep : 295000 		 Average Reward : -2384.11
+Episode : 12095 		 Timestep : 300000 		 Average Reward : -2390.51
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  1:07:01
+--------------------------------------------------------------------------------------------
+Episode : 12304 		 Timestep : 305000 		 Average Reward : -2384.26
+Episode : 12511 		 Timestep : 310000 		 Average Reward : -2402.35
+Episode : 12720 		 Timestep : 315000 		 Average Reward : -2379.27
+Episode : 12929 		 Timestep : 320000 		 Average Reward : -2383.27
+Episode : 13138 		 Timestep : 325000 		 Average Reward : -2375.73
+Episode : 13346 		 Timestep : 330000 		 Average Reward : -2386.73
+Episode : 13554 		 Timestep : 335000 		 Average Reward : -2393.4
+Episode : 13764 		 Timestep : 340000 		 Average Reward : -2374.57
+Episode : 13971 		 Timestep : 345000 		 Average Reward : -2395.67
+Episode : 14181 		 Timestep : 350000 		 Average Reward : -2374.06
+Episode : 14388 		 Timestep : 355000 		 Average Reward : -2400.67
+Episode : 14598 		 Timestep : 360000 		 Average Reward : -2369.48
+Episode : 14807 		 Timestep : 365000 		 Average Reward : -2383.42
+Episode : 15013 		 Timestep : 370000 		 Average Reward : -2403.33
+Episode : 15222 		 Timestep : 375000 		 Average Reward : -2388.2
+Episode : 15430 		 Timestep : 380000 		 Average Reward : -2385.38
+Episode : 15637 		 Timestep : 385000 		 Average Reward : -2404.13
+Episode : 15844 		 Timestep : 390000 		 Average Reward : -2402.22
+Episode : 16052 		 Timestep : 395000 		 Average Reward : -2395.08
+Episode : 16260 		 Timestep : 400000 		 Average Reward : -2390.69
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  1:31:01
+--------------------------------------------------------------------------------------------
+Episode : 16468 		 Timestep : 405000 		 Average Reward : -2390.63
+Episode : 16677 		 Timestep : 410000 		 Average Reward : -2379.24
+Episode : 16885 		 Timestep : 415000 		 Average Reward : -2388.42
+Episode : 17093 		 Timestep : 420000 		 Average Reward : -2391.49
+Episode : 17300 		 Timestep : 425000 		 Average Reward : -2404.37
+Episode : 17507 		 Timestep : 430000 		 Average Reward : -2401.01
+Episode : 17715 		 Timestep : 435000 		 Average Reward : -2395.82
+Episode : 17923 		 Timestep : 440000 		 Average Reward : -2392.79
+Episode : 18132 		 Timestep : 445000 		 Average Reward : -2377.47
+Episode : 18341 		 Timestep : 450000 		 Average Reward : -2379.55
+Episode : 18550 		 Timestep : 455000 		 Average Reward : -2381.99
+Episode : 18756 		 Timestep : 460000 		 Average Reward : -2411.01
+Episode : 18963 		 Timestep : 465000 		 Average Reward : -2407.61
+Episode : 19169 		 Timestep : 470000 		 Average Reward : -2413.15
+Episode : 19376 		 Timestep : 475000 		 Average Reward : -2402.21
+Episode : 19584 		 Timestep : 480000 		 Average Reward : -2390.4
+Episode : 19790 		 Timestep : 485000 		 Average Reward : -2406.34
+Episode : 20000 		 Timestep : 490000 		 Average Reward : -2375.67
+Episode : 20207 		 Timestep : 495000 		 Average Reward : -2400.75
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.5
+--------------------------------------------------------------------------------------------
+Episode : 20416 		 Timestep : 500000 		 Average Reward : -2383.63
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  1:54:54
+--------------------------------------------------------------------------------------------
+Episode : 20623 		 Timestep : 505000 		 Average Reward : -2396.35
+Episode : 20832 		 Timestep : 510000 		 Average Reward : -2380.65
+Episode : 21040 		 Timestep : 515000 		 Average Reward : -2395.56
+Episode : 21248 		 Timestep : 520000 		 Average Reward : -2386.74
+Episode : 21457 		 Timestep : 525000 		 Average Reward : -2386.7
+Episode : 21665 		 Timestep : 530000 		 Average Reward : -2391.73
+Episode : 21872 		 Timestep : 535000 		 Average Reward : -2394.07
+Episode : 22080 		 Timestep : 540000 		 Average Reward : -2399.42
+Episode : 22287 		 Timestep : 545000 		 Average Reward : -2394.29
+Episode : 22496 		 Timestep : 550000 		 Average Reward : -2385.7
+Episode : 22705 		 Timestep : 555000 		 Average Reward : -2379.12
+Episode : 22913 		 Timestep : 560000 		 Average Reward : -2391.23
+Episode : 23120 		 Timestep : 565000 		 Average Reward : -2394.86
+Episode : 23329 		 Timestep : 570000 		 Average Reward : -2386.67
+Episode : 23536 		 Timestep : 575000 		 Average Reward : -2396.77
+Episode : 23745 		 Timestep : 580000 		 Average Reward : -2380.62
+Episode : 23954 		 Timestep : 585000 		 Average Reward : -2388.87
+Episode : 24162 		 Timestep : 590000 		 Average Reward : -2387.84
+Episode : 24370 		 Timestep : 595000 		 Average Reward : -2392.44
+Episode : 24577 		 Timestep : 600000 		 Average Reward : -2395.65
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  2:19:45
+--------------------------------------------------------------------------------------------
+Episode : 24786 		 Timestep : 605000 		 Average Reward : -2378.39
+Episode : 24995 		 Timestep : 610000 		 Average Reward : -2381.09
+Episode : 25203 		 Timestep : 615000 		 Average Reward : -2395.76
+Episode : 25410 		 Timestep : 620000 		 Average Reward : -2399.23
+Episode : 25619 		 Timestep : 625000 		 Average Reward : -2382.61
+Episode : 25828 		 Timestep : 630000 		 Average Reward : -2379.59
+Episode : 26036 		 Timestep : 635000 		 Average Reward : -2388.55
+Episode : 26245 		 Timestep : 640000 		 Average Reward : -2387.12
+Episode : 26453 		 Timestep : 645000 		 Average Reward : -2382.8
+Episode : 26661 		 Timestep : 650000 		 Average Reward : -2391.14
+Episode : 26869 		 Timestep : 655000 		 Average Reward : -2389.43
+Episode : 27078 		 Timestep : 660000 		 Average Reward : -2386.37
+Episode : 27286 		 Timestep : 665000 		 Average Reward : -2387.9
+Episode : 27493 		 Timestep : 670000 		 Average Reward : -2403.54
+Episode : 27701 		 Timestep : 675000 		 Average Reward : -2383.81
+Episode : 27910 		 Timestep : 680000 		 Average Reward : -2388.71
+Episode : 28118 		 Timestep : 685000 		 Average Reward : -2385.66
+Episode : 28325 		 Timestep : 690000 		 Average Reward : -2407.3
+Episode : 28534 		 Timestep : 695000 		 Average Reward : -2382.65
+Episode : 28743 		 Timestep : 700000 		 Average Reward : -2375.9
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  2:44:36
+--------------------------------------------------------------------------------------------
+Episode : 28952 		 Timestep : 705000 		 Average Reward : -2379.19
+Episode : 29161 		 Timestep : 710000 		 Average Reward : -2378.45
+Episode : 29369 		 Timestep : 715000 		 Average Reward : -2393.95
+Episode : 29577 		 Timestep : 720000 		 Average Reward : -2383.69
+Episode : 29786 		 Timestep : 725000 		 Average Reward : -2383.4
+Episode : 29994 		 Timestep : 730000 		 Average Reward : -2396.26
+Episode : 30202 		 Timestep : 735000 		 Average Reward : -2390.0
+Episode : 30409 		 Timestep : 740000 		 Average Reward : -2396.51
+Episode : 30617 		 Timestep : 745000 		 Average Reward : -2397.99
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.45
+--------------------------------------------------------------------------------------------
+Episode : 30825 		 Timestep : 750000 		 Average Reward : -2391.23
+Episode : 31033 		 Timestep : 755000 		 Average Reward : -2386.03
+Episode : 31240 		 Timestep : 760000 		 Average Reward : -2398.5
+Episode : 31449 		 Timestep : 765000 		 Average Reward : -2386.13
+Episode : 31658 		 Timestep : 770000 		 Average Reward : -2379.27
+Episode : 31866 		 Timestep : 775000 		 Average Reward : -2386.82
+Episode : 32076 		 Timestep : 780000 		 Average Reward : -2376.42
+Episode : 32283 		 Timestep : 785000 		 Average Reward : -2390.79
+Episode : 32492 		 Timestep : 790000 		 Average Reward : -2386.61
+Episode : 32700 		 Timestep : 795000 		 Average Reward : -2388.56
+Episode : 32908 		 Timestep : 800000 		 Average Reward : -2392.83
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  3:09:18
+--------------------------------------------------------------------------------------------
+Episode : 33116 		 Timestep : 805000 		 Average Reward : -2390.48
+Episode : 33324 		 Timestep : 810000 		 Average Reward : -2392.8
+Episode : 33532 		 Timestep : 815000 		 Average Reward : -2394.38
+Episode : 33739 		 Timestep : 820000 		 Average Reward : -2394.77
+Episode : 33949 		 Timestep : 825000 		 Average Reward : -2374.39
+Episode : 34157 		 Timestep : 830000 		 Average Reward : -2384.83
+Episode : 34364 		 Timestep : 835000 		 Average Reward : -2403.98
+Episode : 34573 		 Timestep : 840000 		 Average Reward : -2375.51
+Episode : 34781 		 Timestep : 845000 		 Average Reward : -2392.77
+Episode : 34989 		 Timestep : 850000 		 Average Reward : -2393.24
+Episode : 35198 		 Timestep : 855000 		 Average Reward : -2386.02
+Episode : 35405 		 Timestep : 860000 		 Average Reward : -2396.76
+Episode : 35613 		 Timestep : 865000 		 Average Reward : -2385.71
+Episode : 35821 		 Timestep : 870000 		 Average Reward : -2390.81
+Episode : 36030 		 Timestep : 875000 		 Average Reward : -2389.27
+Episode : 36237 		 Timestep : 880000 		 Average Reward : -2395.68
+Episode : 36445 		 Timestep : 885000 		 Average Reward : -2397.28
+Episode : 36652 		 Timestep : 890000 		 Average Reward : -2400.57
+Episode : 36860 		 Timestep : 895000 		 Average Reward : -2394.1
+Episode : 37068 		 Timestep : 900000 		 Average Reward : -2386.45
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  3:34:10
+--------------------------------------------------------------------------------------------
+Episode : 37276 		 Timestep : 905000 		 Average Reward : -2385.21
+Episode : 37484 		 Timestep : 910000 		 Average Reward : -2400.31
+Episode : 37691 		 Timestep : 915000 		 Average Reward : -2394.81
+Episode : 37900 		 Timestep : 920000 		 Average Reward : -2386.11
+Episode : 38108 		 Timestep : 925000 		 Average Reward : -2388.56
+Episode : 38316 		 Timestep : 930000 		 Average Reward : -2387.04
+Episode : 38522 		 Timestep : 935000 		 Average Reward : -2416.36
+Episode : 38730 		 Timestep : 940000 		 Average Reward : -2388.7
+Episode : 38939 		 Timestep : 945000 		 Average Reward : -2383.66
+Episode : 39147 		 Timestep : 950000 		 Average Reward : -2386.72
+Episode : 39356 		 Timestep : 955000 		 Average Reward : -2382.09
+Episode : 39564 		 Timestep : 960000 		 Average Reward : -2392.73
+Episode : 39773 		 Timestep : 965000 		 Average Reward : -2381.12
+Episode : 39981 		 Timestep : 970000 		 Average Reward : -2390.58
+Episode : 40189 		 Timestep : 975000 		 Average Reward : -2386.37
+Episode : 40398 		 Timestep : 980000 		 Average Reward : -2384.66
+Episode : 40606 		 Timestep : 985000 		 Average Reward : -2393.12
+Episode : 40814 		 Timestep : 990000 		 Average Reward : -2386.59
+Episode : 41021 		 Timestep : 995000 		 Average Reward : -2404.53
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.4
+--------------------------------------------------------------------------------------------
+Episode : 41229 		 Timestep : 1000000 		 Average Reward : -2389.33
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  3:59:06
+--------------------------------------------------------------------------------------------
+Episode : 41437 		 Timestep : 1005000 		 Average Reward : -2387.18
+Episode : 41645 		 Timestep : 1010000 		 Average Reward : -2392.81
+Episode : 41853 		 Timestep : 1015000 		 Average Reward : -2387.02
+Episode : 42062 		 Timestep : 1020000 		 Average Reward : -2384.37
+Episode : 42271 		 Timestep : 1025000 		 Average Reward : -2378.07
+Episode : 42480 		 Timestep : 1030000 		 Average Reward : -2377.13
+Episode : 42688 		 Timestep : 1035000 		 Average Reward : -2389.93
+Episode : 42896 		 Timestep : 1040000 		 Average Reward : -2400.74
+Episode : 43104 		 Timestep : 1045000 		 Average Reward : -2390.7
+Episode : 43311 		 Timestep : 1050000 		 Average Reward : -2394.63
+Episode : 43520 		 Timestep : 1055000 		 Average Reward : -2383.89
+Episode : 43728 		 Timestep : 1060000 		 Average Reward : -2392.28
+Episode : 43937 		 Timestep : 1065000 		 Average Reward : -2379.91
+Episode : 44144 		 Timestep : 1070000 		 Average Reward : -2394.79
+Episode : 44353 		 Timestep : 1075000 		 Average Reward : -2383.26
+Episode : 44561 		 Timestep : 1080000 		 Average Reward : -2394.24
+Episode : 44770 		 Timestep : 1085000 		 Average Reward : -2377.22
+Episode : 44978 		 Timestep : 1090000 		 Average Reward : -2395.0
+Episode : 45186 		 Timestep : 1095000 		 Average Reward : -2391.32
+Episode : 45394 		 Timestep : 1100000 		 Average Reward : -2386.2
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  4:23:58
+--------------------------------------------------------------------------------------------
+Episode : 45602 		 Timestep : 1105000 		 Average Reward : -2390.15
+Episode : 45811 		 Timestep : 1110000 		 Average Reward : -2382.45
+Episode : 46020 		 Timestep : 1115000 		 Average Reward : -2378.34
+Episode : 46228 		 Timestep : 1120000 		 Average Reward : -2395.55
+Episode : 46436 		 Timestep : 1125000 		 Average Reward : -2391.1
+Episode : 46644 		 Timestep : 1130000 		 Average Reward : -2382.03
+Episode : 46853 		 Timestep : 1135000 		 Average Reward : -2387.3
+Episode : 47061 		 Timestep : 1140000 		 Average Reward : -2388.19
+Episode : 47270 		 Timestep : 1145000 		 Average Reward : -2377.97
+Episode : 47478 		 Timestep : 1150000 		 Average Reward : -2391.0
+Episode : 47686 		 Timestep : 1155000 		 Average Reward : -2387.31
+Episode : 47895 		 Timestep : 1160000 		 Average Reward : -2378.06
+Episode : 48104 		 Timestep : 1165000 		 Average Reward : -2386.41
+Episode : 48312 		 Timestep : 1170000 		 Average Reward : -2385.37
+Episode : 48521 		 Timestep : 1175000 		 Average Reward : -2382.41
+Episode : 48729 		 Timestep : 1180000 		 Average Reward : -2396.81
+Episode : 48936 		 Timestep : 1185000 		 Average Reward : -2394.26
+Episode : 49145 		 Timestep : 1190000 		 Average Reward : -2385.28
+Episode : 49353 		 Timestep : 1195000 		 Average Reward : -2389.13
+Episode : 49561 		 Timestep : 1200000 		 Average Reward : -2392.28
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  4:48:51
+--------------------------------------------------------------------------------------------
+Episode : 49769 		 Timestep : 1205000 		 Average Reward : -2386.03
+Episode : 49977 		 Timestep : 1210000 		 Average Reward : -2393.16
+Episode : 50186 		 Timestep : 1215000 		 Average Reward : -2381.31
+Episode : 50394 		 Timestep : 1220000 		 Average Reward : -2388.78
+Episode : 50603 		 Timestep : 1225000 		 Average Reward : -2375.25
+Episode : 50812 		 Timestep : 1230000 		 Average Reward : -2382.02
+Episode : 51020 		 Timestep : 1235000 		 Average Reward : -2393.01
+Episode : 51228 		 Timestep : 1240000 		 Average Reward : -2393.76
+Episode : 51438 		 Timestep : 1245000 		 Average Reward : -2369.52
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.35
+--------------------------------------------------------------------------------------------
+Episode : 51647 		 Timestep : 1250000 		 Average Reward : -2381.63
+Episode : 51854 		 Timestep : 1255000 		 Average Reward : -2392.34
+Episode : 52063 		 Timestep : 1260000 		 Average Reward : -2388.87
+Episode : 52272 		 Timestep : 1265000 		 Average Reward : -2372.92
+Episode : 52481 		 Timestep : 1270000 		 Average Reward : -2384.22
+Episode : 52689 		 Timestep : 1275000 		 Average Reward : -2383.24
+Episode : 52898 		 Timestep : 1280000 		 Average Reward : -2385.19
+Episode : 53106 		 Timestep : 1285000 		 Average Reward : -2388.15
+Episode : 53316 		 Timestep : 1290000 		 Average Reward : -2371.48
+Episode : 53524 		 Timestep : 1295000 		 Average Reward : -2390.03
+Episode : 53734 		 Timestep : 1300000 		 Average Reward : -2372.14
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  5:13:43
+--------------------------------------------------------------------------------------------
+Episode : 53943 		 Timestep : 1305000 		 Average Reward : -2380.67
+Episode : 54153 		 Timestep : 1310000 		 Average Reward : -2367.21
+Episode : 54362 		 Timestep : 1315000 		 Average Reward : -2378.0
+Episode : 54571 		 Timestep : 1320000 		 Average Reward : -2379.47
+Episode : 54779 		 Timestep : 1325000 		 Average Reward : -2395.19
+Episode : 54987 		 Timestep : 1330000 		 Average Reward : -2384.15
+Episode : 55195 		 Timestep : 1335000 		 Average Reward : -2387.27
+Episode : 55404 		 Timestep : 1340000 		 Average Reward : -2385.2
+Episode : 55613 		 Timestep : 1345000 		 Average Reward : -2377.15
+Episode : 55823 		 Timestep : 1350000 		 Average Reward : -2372.68
+Episode : 56032 		 Timestep : 1355000 		 Average Reward : -2379.17
+Episode : 56241 		 Timestep : 1360000 		 Average Reward : -2374.49
+Episode : 56450 		 Timestep : 1365000 		 Average Reward : -2385.14
+Episode : 56657 		 Timestep : 1370000 		 Average Reward : -2395.35
+Episode : 56866 		 Timestep : 1375000 		 Average Reward : -2386.9
+Episode : 57075 		 Timestep : 1380000 		 Average Reward : -2377.95
+Episode : 57283 		 Timestep : 1385000 		 Average Reward : -2386.25
+Episode : 57491 		 Timestep : 1390000 		 Average Reward : -2392.84
+Episode : 57700 		 Timestep : 1395000 		 Average Reward : -2383.88
+Episode : 57908 		 Timestep : 1400000 		 Average Reward : -2392.58
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  5:38:40
+--------------------------------------------------------------------------------------------
+Episode : 58116 		 Timestep : 1405000 		 Average Reward : -2388.19
+Episode : 58324 		 Timestep : 1410000 		 Average Reward : -2387.56
+Episode : 58533 		 Timestep : 1415000 		 Average Reward : -2386.06
+Episode : 58742 		 Timestep : 1420000 		 Average Reward : -2374.29
+Episode : 58951 		 Timestep : 1425000 		 Average Reward : -2383.76
+Episode : 59159 		 Timestep : 1430000 		 Average Reward : -2383.88
+Episode : 59368 		 Timestep : 1435000 		 Average Reward : -2378.52
+Episode : 59577 		 Timestep : 1440000 		 Average Reward : -2382.04
+Episode : 59786 		 Timestep : 1445000 		 Average Reward : -2378.83
+Episode : 59994 		 Timestep : 1450000 		 Average Reward : -2393.52
+Episode : 60202 		 Timestep : 1455000 		 Average Reward : -2385.8
+Episode : 60412 		 Timestep : 1460000 		 Average Reward : -2375.61
+Episode : 60621 		 Timestep : 1465000 		 Average Reward : -2381.13
+Episode : 60829 		 Timestep : 1470000 		 Average Reward : -2383.31
+Episode : 61038 		 Timestep : 1475000 		 Average Reward : -2386.62
+Episode : 61245 		 Timestep : 1480000 		 Average Reward : -2399.95
+Episode : 61454 		 Timestep : 1485000 		 Average Reward : -2380.76
+Episode : 61662 		 Timestep : 1490000 		 Average Reward : -2385.57
+Episode : 61870 		 Timestep : 1495000 		 Average Reward : -2390.82
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.3
+--------------------------------------------------------------------------------------------
+Episode : 62080 		 Timestep : 1500000 		 Average Reward : -2370.07
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  6:03:35
+--------------------------------------------------------------------------------------------
+Episode : 62289 		 Timestep : 1505000 		 Average Reward : -2384.23
+Episode : 62497 		 Timestep : 1510000 		 Average Reward : -2389.6
+Episode : 62706 		 Timestep : 1515000 		 Average Reward : -2373.69
+Episode : 62915 		 Timestep : 1520000 		 Average Reward : -2382.54
+Episode : 63123 		 Timestep : 1525000 		 Average Reward : -2390.22
+Episode : 63332 		 Timestep : 1530000 		 Average Reward : -2385.66
+Episode : 63541 		 Timestep : 1535000 		 Average Reward : -2375.93
+Episode : 63751 		 Timestep : 1540000 		 Average Reward : -2372.22
+Episode : 63959 		 Timestep : 1545000 		 Average Reward : -2383.25
+Episode : 64169 		 Timestep : 1550000 		 Average Reward : -2374.48
+Episode : 64377 		 Timestep : 1555000 		 Average Reward : -2386.81
+Episode : 64586 		 Timestep : 1560000 		 Average Reward : -2380.06
+Episode : 64793 		 Timestep : 1565000 		 Average Reward : -2398.29
+Episode : 65002 		 Timestep : 1570000 		 Average Reward : -2382.87
+Episode : 65211 		 Timestep : 1575000 		 Average Reward : -2385.45
+Episode : 65418 		 Timestep : 1580000 		 Average Reward : -2392.55
+Episode : 65629 		 Timestep : 1585000 		 Average Reward : -2366.3
+Episode : 65837 		 Timestep : 1590000 		 Average Reward : -2381.87
+Episode : 66047 		 Timestep : 1595000 		 Average Reward : -2373.31
+Episode : 66256 		 Timestep : 1600000 		 Average Reward : -2382.77
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  6:28:16
+--------------------------------------------------------------------------------------------
+Episode : 66465 		 Timestep : 1605000 		 Average Reward : -2377.23
+Episode : 66674 		 Timestep : 1610000 		 Average Reward : -2382.33
+Episode : 66882 		 Timestep : 1615000 		 Average Reward : -2386.09
+Episode : 67091 		 Timestep : 1620000 		 Average Reward : -2384.73
+Episode : 67300 		 Timestep : 1625000 		 Average Reward : -2376.64
+Episode : 67509 		 Timestep : 1630000 		 Average Reward : -2377.38
+Episode : 67718 		 Timestep : 1635000 		 Average Reward : -2385.07
+Episode : 67926 		 Timestep : 1640000 		 Average Reward : -2382.77
+Episode : 68134 		 Timestep : 1645000 		 Average Reward : -2393.49
+Episode : 68342 		 Timestep : 1650000 		 Average Reward : -2385.76
+Episode : 68551 		 Timestep : 1655000 		 Average Reward : -2385.62
+Episode : 68759 		 Timestep : 1660000 		 Average Reward : -2384.83
+Episode : 68969 		 Timestep : 1665000 		 Average Reward : -2372.34
+Episode : 69177 		 Timestep : 1670000 		 Average Reward : -2387.6
+Episode : 69386 		 Timestep : 1675000 		 Average Reward : -2378.85
+Episode : 69595 		 Timestep : 1680000 		 Average Reward : -2389.91
+Episode : 69803 		 Timestep : 1685000 		 Average Reward : -2383.94
+Episode : 70012 		 Timestep : 1690000 		 Average Reward : -2381.55
+Episode : 70221 		 Timestep : 1695000 		 Average Reward : -2383.85
+Episode : 70429 		 Timestep : 1700000 		 Average Reward : -2386.14
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  6:53:14
+--------------------------------------------------------------------------------------------
+Episode : 70638 		 Timestep : 1705000 		 Average Reward : -2377.56
+Episode : 70847 		 Timestep : 1710000 		 Average Reward : -2382.37
+Episode : 71055 		 Timestep : 1715000 		 Average Reward : -2384.74
+Episode : 71264 		 Timestep : 1720000 		 Average Reward : -2388.79
+Episode : 71472 		 Timestep : 1725000 		 Average Reward : -2383.24
+Episode : 71682 		 Timestep : 1730000 		 Average Reward : -2374.71
+Episode : 71890 		 Timestep : 1735000 		 Average Reward : -2389.49
+Episode : 72098 		 Timestep : 1740000 		 Average Reward : -2385.25
+Episode : 72307 		 Timestep : 1745000 		 Average Reward : -2383.38
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.25
+--------------------------------------------------------------------------------------------
+Episode : 72515 		 Timestep : 1750000 		 Average Reward : -2396.25
+Episode : 72723 		 Timestep : 1755000 		 Average Reward : -2384.56
+Episode : 72932 		 Timestep : 1760000 		 Average Reward : -2384.8
+Episode : 73141 		 Timestep : 1765000 		 Average Reward : -2381.62
+Episode : 73349 		 Timestep : 1770000 		 Average Reward : -2380.83
+Episode : 73559 		 Timestep : 1775000 		 Average Reward : -2376.6
+Episode : 73767 		 Timestep : 1780000 		 Average Reward : -2383.2
+Episode : 73977 		 Timestep : 1785000 		 Average Reward : -2376.93
+Episode : 74185 		 Timestep : 1790000 		 Average Reward : -2382.18
+Episode : 74394 		 Timestep : 1795000 		 Average Reward : -2385.27
+Episode : 74602 		 Timestep : 1800000 		 Average Reward : -2395.2
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  7:18:11
+--------------------------------------------------------------------------------------------
+Episode : 74811 		 Timestep : 1805000 		 Average Reward : -2378.3
+Episode : 75019 		 Timestep : 1810000 		 Average Reward : -2383.9
+Episode : 75227 		 Timestep : 1815000 		 Average Reward : -2390.95
+Episode : 75436 		 Timestep : 1820000 		 Average Reward : -2383.22
+Episode : 75645 		 Timestep : 1825000 		 Average Reward : -2382.08
+Episode : 75853 		 Timestep : 1830000 		 Average Reward : -2389.35
+Episode : 76061 		 Timestep : 1835000 		 Average Reward : -2390.28
+Episode : 76270 		 Timestep : 1840000 		 Average Reward : -2380.75
+Episode : 76478 		 Timestep : 1845000 		 Average Reward : -2389.06
+Episode : 76687 		 Timestep : 1850000 		 Average Reward : -2382.5
+Episode : 76895 		 Timestep : 1855000 		 Average Reward : -2385.1
+Episode : 77104 		 Timestep : 1860000 		 Average Reward : -2386.73
+Episode : 77312 		 Timestep : 1865000 		 Average Reward : -2388.09
+Episode : 77521 		 Timestep : 1870000 		 Average Reward : -2379.83
+Episode : 77730 		 Timestep : 1875000 		 Average Reward : -2378.84
+Episode : 77938 		 Timestep : 1880000 		 Average Reward : -2383.64
+Episode : 78147 		 Timestep : 1885000 		 Average Reward : -2379.57
+Episode : 78356 		 Timestep : 1890000 		 Average Reward : -2382.28
+Episode : 78565 		 Timestep : 1895000 		 Average Reward : -2380.25
+Episode : 78774 		 Timestep : 1900000 		 Average Reward : -2385.91
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  7:43:05
+--------------------------------------------------------------------------------------------
+Episode : 78983 		 Timestep : 1905000 		 Average Reward : -2376.22
+Episode : 79191 		 Timestep : 1910000 		 Average Reward : -2389.54
+Episode : 79400 		 Timestep : 1915000 		 Average Reward : -2384.77
+Episode : 79607 		 Timestep : 1920000 		 Average Reward : -2393.57
+Episode : 79816 		 Timestep : 1925000 		 Average Reward : -2380.05
+Episode : 80025 		 Timestep : 1930000 		 Average Reward : -2384.68
+Episode : 80233 		 Timestep : 1935000 		 Average Reward : -2388.18
+Episode : 80443 		 Timestep : 1940000 		 Average Reward : -2372.91
+Episode : 80652 		 Timestep : 1945000 		 Average Reward : -2379.03
+Episode : 80861 		 Timestep : 1950000 		 Average Reward : -2380.5
+Episode : 81070 		 Timestep : 1955000 		 Average Reward : -2380.3
+Episode : 81279 		 Timestep : 1960000 		 Average Reward : -2373.0
+Episode : 81488 		 Timestep : 1965000 		 Average Reward : -2383.12
+Episode : 81696 		 Timestep : 1970000 		 Average Reward : -2385.36
+Episode : 81905 		 Timestep : 1975000 		 Average Reward : -2382.9
+Episode : 82113 		 Timestep : 1980000 		 Average Reward : -2387.18
+Episode : 82322 		 Timestep : 1985000 		 Average Reward : -2385.17
+Episode : 82530 		 Timestep : 1990000 		 Average Reward : -2385.18
+Episode : 82739 		 Timestep : 1995000 		 Average Reward : -2380.47
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.2
+--------------------------------------------------------------------------------------------
+Episode : 82948 		 Timestep : 2000000 		 Average Reward : -2383.69
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  8:07:45
+--------------------------------------------------------------------------------------------
+Episode : 83156 		 Timestep : 2005000 		 Average Reward : -2383.02
+Episode : 83365 		 Timestep : 2010000 		 Average Reward : -2381.93
+Episode : 83574 		 Timestep : 2015000 		 Average Reward : -2383.19
+Episode : 83783 		 Timestep : 2020000 		 Average Reward : -2379.72
+Episode : 83991 		 Timestep : 2025000 		 Average Reward : -2385.84
+Episode : 84200 		 Timestep : 2030000 		 Average Reward : -2385.2
+Episode : 84409 		 Timestep : 2035000 		 Average Reward : -2376.56
+Episode : 84618 		 Timestep : 2040000 		 Average Reward : -2383.61
+Episode : 84827 		 Timestep : 2045000 		 Average Reward : -2375.99
+Episode : 85035 		 Timestep : 2050000 		 Average Reward : -2386.3
+Episode : 85245 		 Timestep : 2055000 		 Average Reward : -2375.72
+Episode : 85454 		 Timestep : 2060000 		 Average Reward : -2380.31
+Episode : 85663 		 Timestep : 2065000 		 Average Reward : -2380.34
+Episode : 85872 		 Timestep : 2070000 		 Average Reward : -2379.9
+Episode : 86080 		 Timestep : 2075000 		 Average Reward : -2386.93
+Episode : 86288 		 Timestep : 2080000 		 Average Reward : -2388.47
+Episode : 86497 		 Timestep : 2085000 		 Average Reward : -2380.8
+Episode : 86705 		 Timestep : 2090000 		 Average Reward : -2386.58
+Episode : 86914 		 Timestep : 2095000 		 Average Reward : -2378.48
+Episode : 87123 		 Timestep : 2100000 		 Average Reward : -2380.45
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  8:32:31
+--------------------------------------------------------------------------------------------
+Episode : 87333 		 Timestep : 2105000 		 Average Reward : -2376.73
+Episode : 87542 		 Timestep : 2110000 		 Average Reward : -2377.78
+Episode : 87750 		 Timestep : 2115000 		 Average Reward : -2385.24
+Episode : 87959 		 Timestep : 2120000 		 Average Reward : -2376.49
+Episode : 88168 		 Timestep : 2125000 		 Average Reward : -2384.1
+Episode : 88377 		 Timestep : 2130000 		 Average Reward : -2384.62
+Episode : 88585 		 Timestep : 2135000 		 Average Reward : -2385.16
+Episode : 88794 		 Timestep : 2140000 		 Average Reward : -2383.65
+Episode : 89003 		 Timestep : 2145000 		 Average Reward : -2377.61
+Episode : 89212 		 Timestep : 2150000 		 Average Reward : -2383.32
+Episode : 89421 		 Timestep : 2155000 		 Average Reward : -2374.88
+Episode : 89629 		 Timestep : 2160000 		 Average Reward : -2388.12
+Episode : 89838 		 Timestep : 2165000 		 Average Reward : -2385.08
+Episode : 90047 		 Timestep : 2170000 		 Average Reward : -2381.02
+Episode : 90255 		 Timestep : 2175000 		 Average Reward : -2380.84
+Episode : 90464 		 Timestep : 2180000 		 Average Reward : -2385.61
+Episode : 90672 		 Timestep : 2185000 		 Average Reward : -2386.52
+Episode : 90881 		 Timestep : 2190000 		 Average Reward : -2377.51
+Episode : 91091 		 Timestep : 2195000 		 Average Reward : -2374.72
+Episode : 91299 		 Timestep : 2200000 		 Average Reward : -2384.49
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  8:57:28
+--------------------------------------------------------------------------------------------
+Episode : 91508 		 Timestep : 2205000 		 Average Reward : -2383.34
+Episode : 91717 		 Timestep : 2210000 		 Average Reward : -2384.34
+Episode : 91925 		 Timestep : 2215000 		 Average Reward : -2384.56
+Episode : 92134 		 Timestep : 2220000 		 Average Reward : -2384.67
+Episode : 92343 		 Timestep : 2225000 		 Average Reward : -2379.96
+Episode : 92551 		 Timestep : 2230000 		 Average Reward : -2388.08
+Episode : 92759 		 Timestep : 2235000 		 Average Reward : -2386.53
+Episode : 92968 		 Timestep : 2240000 		 Average Reward : -2381.56
+Episode : 93177 		 Timestep : 2245000 		 Average Reward : -2379.9
+--------------------------------------------------------------------------------------------
+setting actor output action_std to :  0.15
+--------------------------------------------------------------------------------------------
+Episode : 93386 		 Timestep : 2250000 		 Average Reward : -2385.08
+Episode : 93595 		 Timestep : 2255000 		 Average Reward : -2378.42
+Episode : 93803 		 Timestep : 2260000 		 Average Reward : -2384.03
+Episode : 94012 		 Timestep : 2265000 		 Average Reward : -2387.49
+Episode : 94220 		 Timestep : 2270000 		 Average Reward : -2386.43
+Episode : 94429 		 Timestep : 2275000 		 Average Reward : -2382.97
+Episode : 94638 		 Timestep : 2280000 		 Average Reward : -2379.99
+Episode : 94846 		 Timestep : 2285000 		 Average Reward : -2385.18
+Episode : 95055 		 Timestep : 2290000 		 Average Reward : -2382.91
+Episode : 95264 		 Timestep : 2295000 		 Average Reward : -2376.96
+Episode : 95473 		 Timestep : 2300000 		 Average Reward : -2385.54
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  9:22:25
+--------------------------------------------------------------------------------------------
+Episode : 95682 		 Timestep : 2305000 		 Average Reward : -2379.37
+Episode : 95889 		 Timestep : 2310000 		 Average Reward : -2392.1
+Episode : 96098 		 Timestep : 2315000 		 Average Reward : -2380.84
+Episode : 96307 		 Timestep : 2320000 		 Average Reward : -2387.97
+Episode : 96516 		 Timestep : 2325000 		 Average Reward : -2378.54
+Episode : 96725 		 Timestep : 2330000 		 Average Reward : -2379.19
+Episode : 96933 		 Timestep : 2335000 		 Average Reward : -2382.37
+Episode : 97142 		 Timestep : 2340000 		 Average Reward : -2386.05
+Episode : 97351 		 Timestep : 2345000 		 Average Reward : -2380.18
+Episode : 97559 		 Timestep : 2350000 		 Average Reward : -2383.21
+Episode : 97768 		 Timestep : 2355000 		 Average Reward : -2382.63
+Episode : 97978 		 Timestep : 2360000 		 Average Reward : -2374.66
+Episode : 98187 		 Timestep : 2365000 		 Average Reward : -2374.68
+Episode : 98396 		 Timestep : 2370000 		 Average Reward : -2381.53
+Episode : 98605 		 Timestep : 2375000 		 Average Reward : -2382.96
+Episode : 98813 		 Timestep : 2380000 		 Average Reward : -2385.53
+Episode : 99022 		 Timestep : 2385000 		 Average Reward : -2377.48
+Episode : 99231 		 Timestep : 2390000 		 Average Reward : -2385.83
+Episode : 99440 		 Timestep : 2395000 		 Average Reward : -2377.65
+Episode : 99649 		 Timestep : 2400000 		 Average Reward : -2378.55
+--------------------------------------------------------------------------------------------
+saving model at : PPO_preTrained_forward_reward_joint_limit/jbdl_cartpole-v1/PPO_jbdl_cartpole-v1_0_0.pth
+model saved
+Elapsed Time  :  9:47:23
+--------------------------------------------------------------------------------------------
+Episode : 99858 		 Timestep : 2405000 		 Average Reward : -2382.42
+Episode : 100067 		 Timestep : 2410000 		 Average Reward : -2379.3
+Episode : 100275 		 Timestep : 2415000 		 Average Reward : -2390.95
+Episode : 100483 		 Timestep : 2420000 		 Average Reward : -2381.85
+Episode : 100692 		 Timestep : 2425000 		 Average Reward : -2382.95
+Episode : 100901 		 Timestep : 2430000 		 Average Reward : -2378.62
+Episode : 101110 		 Timestep : 2435000 		 Average Reward : -2381.83
+Episode : 101319 		 Timestep : 2440000 		 Average Reward : -2381.23
+Episode : 101528 		 Timestep : 2445000 		 Average Reward : -2381.14
+Episode : 101736 		 Timestep : 2450000 		 Average Reward : -2384.86
+Episode : 101945 		 Timestep : 2455000 		 Average Reward : -2381.82
+Episode : 102154 		 Timestep : 2460000 		 Average Reward : -2382.73
+Episode : 102363 		 Timestep : 2465000 		 Average Reward : -2379.82
+Episode : 102572 		 Timestep : 2470000 		 Average Reward : -2376.07
+Episode : 102781 		 Timestep : 2475000 		 Average Reward : -2378.05
+Episode : 102990 		 Timestep : 2480000 		 Average Reward : -2382.8

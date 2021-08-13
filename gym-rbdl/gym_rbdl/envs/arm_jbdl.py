@@ -141,7 +141,10 @@ class ArmJBDLEnv(gym.Env):
         q = jnp.zeros(7)
         qdot = jnp.zeros(7)
         self.state = jnp.array([q,qdot]).flatten()
+<<<<<<< HEAD
 
+=======
+>>>>>>> ee0631938e12dcbb04a42eaa820dedfdf0bb6927
         self.state =  np.array(self.state)
         return self.state
 
@@ -181,7 +184,7 @@ class ArmJBDLEnv(gym.Env):
         # reward = jnp.log((q[5]-1.57)**2) + jnp.log(jnp.sum(jnp.square(qdot - self.qdot_target)))
         # reward = jnp.linalg.norm(jnp.square(q - self.target)) + jnp.linalg.norm(jnp.square(qdot - self.qdot_target))
         reward = -costs
-        reward =  np.array(reward)
+        reward = np.array(reward)
         return reward
 
 
