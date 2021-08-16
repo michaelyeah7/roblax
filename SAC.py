@@ -14,7 +14,6 @@ from IPython.display import clear_output
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from IPython.display import display
-from reacher import Reacher
 
 import argparse
 import time
@@ -200,8 +199,8 @@ class PolicyNetwork(nn.Module):
         return self.action_range*a.numpy()
 
 
-class SAC_Trainer():
-    def __init__(self, replay_buffer, hidden_dim, action_range):
+class SAC:
+    def __init__(self, replay_buffer, hidden_dim, action_range, state_dim, action_dim):
         self.replay_buffer = replay_buffer
 
         self.soft_q_net1 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
@@ -210,6 +209,8 @@ class SAC_Trainer():
         self.target_soft_q_net2 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
         self.policy_net = PolicyNetwork(state_dim, action_dim, hidden_dim, action_range).to(device)
         self.log_alpha = torch.zeros(1, dtype=torch.float32, requires_grad=True, device=device)
+        self.action_dim = action_dim
+        self.state_dim  = state_dim
         print('Soft Q Network (1,2): ', self.soft_q_net1)
         print('Policy Network: ', self.policy_net)
 
