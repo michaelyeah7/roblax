@@ -141,10 +141,6 @@ class ArmJBDLEnv(gym.Env):
         q = jnp.zeros(7)
         qdot = jnp.zeros(7)
         self.state = jnp.array([q,qdot]).flatten()
-<<<<<<< HEAD
-
-=======
->>>>>>> ee0631938e12dcbb04a42eaa820dedfdf0bb6927
         self.state =  np.array(self.state)
         return self.state
 

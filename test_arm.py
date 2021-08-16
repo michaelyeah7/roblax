@@ -13,7 +13,8 @@ import gym_rbdl
 
 # import pybullet_envs
 
-from PPO import PPO
+
+from SAC import SAC
 
 
 
@@ -82,7 +83,7 @@ else:
 
 
 # initialize a PPO agent
-ppo_agent = PPO(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
+ppo_agent = SAC(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
 
 
 # preTrained weights directory
