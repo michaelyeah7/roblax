@@ -297,16 +297,10 @@ class SAC:
             )
         return predicted_new_q_value.mean()
 
-    def save_model(self, path):
-        torch.save(self.soft_q_net1.state_dict(), path+'_q1')
-        torch.save(self.soft_q_net2.state_dict(), path+'_q2')
-        torch.save(self.policy_net.state_dict(), path+'_policy')
+    def save(self, checkpoint_path):
+        torch.save(self.policy_old.state_dict(), checkpoint_path)
+   
 
-    def load_model(self, path):
-        self.soft_q_net1.load_state_dict(torch.load(path+'_q1'))
-        self.soft_q_net2.load_state_dict(torch.load(path+'_q2'))
-        self.policy_net.load_state_dict(torch.load(path+'_policy'))
-
-        self.soft_q_net1.eval()
-        self.soft_q_net2.eval()
-        self.policy_net.eval()
+    def load(self, checkpoint_path):
+        self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
