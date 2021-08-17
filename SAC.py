@@ -298,9 +298,10 @@ class SAC:
         return predicted_new_q_value.mean()
 
     def save(self, checkpoint_path):
-        torch.save(self.policy_old.state_dict(), checkpoint_path)
+        torch.save(self.policy_net.state_dict(), checkpoint_path+'_policy')
    
 
     def load(self, checkpoint_path):
-        self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        self.policy_net.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+
+        self.policy_net.eval()
