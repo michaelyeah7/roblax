@@ -189,7 +189,7 @@ def train():
     action_range=1
     hidden_dim = 512
     # initialize a SAC agent
-    #SAC_agent = SAC(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
+    #SAC_agent = SAC(seed = 5, state_dim, action_dim, lr = lr_actor, gamma = gamma)
     SAC_agent = SAC(replay_buffer, hidden_dim=hidden_dim, action_range=action_range, state_dim = state_dim, action_dim = action_dim)
 
     # track total training time

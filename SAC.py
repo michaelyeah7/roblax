@@ -1,301 +1,284 @@
-import math
-import random
+import copy
 
-import gym
 import numpy as np
-
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-from torch.distributions import Normal
+from torch.distributions import Normal, TransformedDistribution
 
-from IPython.display import clear_output
-import matplotlib.pyplot as plt
-from matplotlib import animation
-from IPython.display import display
+import math
 
-import argparse
-import time
+from numpy.random import default_rng
+from torch.distributions import constraints
+from torch.distributions.transforms import Transform
+from torch.nn.functional import softplus
 
-GPU = True
-device_idx = 0
-if GPU:
-    device = torch.device("cuda:" + str(device_idx) if torch.cuda.is_available() else "cpu")
-else:
-    device = torch.device("cpu")
-print(device)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 
-class ReplayBuffer:
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.buffer = []
-        self.position = 0
-    
-    def push(self, state, action, reward, next_state, done):
-        if len(self.buffer) < self.capacity:
-            self.buffer.append(None)
-        self.buffer[self.position] = (state, action, reward, next_state, done)
-        self.position = int((self.position + 1) % self.capacity)  # as a ring buffer
-    
-    def sample(self, batch_size):
-        batch = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, done = map(np.stack, zip(*batch)) # stack for each element
-        ''' 
-        the * serves as unpack: sum(a,b) <=> batch=(a,b), sum(*batch) ;
-        zip: a=[1,2], b=[2,3], zip(a,b) => [(1, 2), (2, 3)] ;
-        the map serves as mapping the function on each list element: map(square, [2,3]) => [4,9] ;
-        np.stack((1,2)) => array([1, 2])
-        '''
-        return state, action, reward, next_state, done
-    
+class ReplayPool:
+
+    def __init__(self, action_dim, state_dim, capacity=1e6):
+        self.capacity = int(capacity)
+        self._action_dim = action_dim
+        self._state_dim = state_dim
+        self._pointer = 0
+        self._size = 0
+        self._init_memory()
+        self._rng = default_rng()
+
+    def _init_memory(self):
+        self._memory = {
+            'state': np.zeros((self.capacity, self._state_dim), dtype='float32'),
+            'action': np.zeros((self.capacity, self._action_dim), dtype='float32'),
+            'reward': np.zeros((self.capacity), dtype='float32'),
+            'nextstate': np.zeros((self.capacity, self._state_dim), dtype='float32'),
+            'real_done': np.zeros((self.capacity), dtype='bool')
+        }
+
+    def push(self, transition: Transition):
+
+        # Handle 1-D Data
+        num_samples = transition.state.shape[0] if len(transition.state.shape) > 1 else 1
+        idx = np.arange(self._pointer, self._pointer + num_samples) % self.capacity
+
+        for key, value in transition._asdict().items():
+            self._memory[key][idx] = value
+
+        self._pointer = (self._pointer + num_samples) % self.capacity
+        self._size = min(self._size + num_samples, self.capacity)
+
+    def _return_from_idx(self, idx):
+        sample = {k: tuple(v[idx]) for k,v in self._memory.items()}
+        return Transition(**sample)
+
+    def sample(self, batch_size: int, unique: bool = True):
+        idx = np.random.randint(0, self._size, batch_size) if not unique else self._rng.choice(self._size, size=batch_size, replace=False)
+        return self._return_from_idx(idx)
+
+    def sample_all(self):
+        return self._return_from_idx(np.arange(0, self._size))
+
     def __len__(self):
-        return len(self.buffer)
+        return self._size
 
-class NormalizedActions(gym.ActionWrapper):
-    def _action(self, action):
-        low  = self.action_space.low
-        high = self.action_space.high
-        
-        action = low + (action + 1.0) * 0.5 * (high - low)
-        action = np.clip(action, low, high)
-        
-        return action
+    def clear_pool(self):
+        self._init_memory()
 
-    def _reverse_action(self, action):
-        low  = self.action_space.low
-        high = self.action_space.high
-        
-        action = 2 * (action - low) / (high - low) - 1
-        action = np.clip(action, low, high)
-        
-        return action
+    def initialise(self, old_pool):
+        # Not Tested
+        old_memory = old_pool.sample_all()
+        for key in self._memory:
+            self._memory[key] = np.append(self._memory[key], old_memory[key], 0)
 
 
-class ValueNetwork(nn.Module):
-    def __init__(self, state_dim, hidden_dim, init_w=3e-3):
-        super(ValueNetwork, self).__init__()
-        
-        self.linear1 = nn.Linear(state_dim, hidden_dim)
-        self.linear2 = nn.Linear(hidden_dim, hidden_dim)
-        self.linear3 = nn.Linear(hidden_dim, hidden_dim)
-        self.linear4 = nn.Linear(hidden_dim, 1)
-        # weights initialization
-        self.linear4.weight.data.uniform_(-init_w, init_w)
-        self.linear4.bias.data.uniform_(-init_w, init_w)
-        
-    def forward(self, state):
-        x = F.relu(self.linear1(state))
-        x = F.relu(self.linear2(x))
-        x = F.relu(self.linear3(x))
-        x = self.linear4(x)
-        return x
-        
-        
-class SoftQNetwork(nn.Module):
-    def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3):
-        super(SoftQNetwork, self).__init__()
-        
-        self.linear1 = nn.Linear(num_inputs + num_actions, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, hidden_size)
-        self.linear3 = nn.Linear(hidden_size, hidden_size)
-        self.linear4 = nn.Linear(hidden_size, 1)
-        
-        self.linear4.weight.data.uniform_(-init_w, init_w)
-        self.linear4.bias.data.uniform_(-init_w, init_w)
-        
+# Taken from: https://github.com/pytorch/pytorch/pull/19785/files
+# The composition of affine + sigmoid + affine transforms is unstable numerically
+# tanh transform is (2 * sigmoid(2x) - 1)
+# Old Code Below:
+# transforms = [AffineTransform(loc=0, scale=2), SigmoidTransform(), AffineTransform(loc=-1, scale=2)]
+class TanhTransform(Transform):
+    r"""
+    Transform via the mapping :math:`y = \tanh(x)`.
+    It is equivalent to
+    ```
+    ComposeTransform([AffineTransform(0., 2.), SigmoidTransform(), AffineTransform(-1., 2.)])
+    ```
+    However this might not be numerically stable, thus it is recommended to use `TanhTransform`
+    instead.
+    Note that one should use `cache_size=1` when it comes to `NaN/Inf` values.
+    """
+    domain = constraints.real
+    codomain = constraints.interval(-1.0, 1.0)
+    bijective = True
+    sign = +1
+
+    @staticmethod
+    def atanh(x):
+        return 0.5 * (x.log1p() - (-x).log1p())
+
+    def __eq__(self, other):
+        return isinstance(other, TanhTransform)
+
+    def _call(self, x):
+        return x.tanh()
+
+    def _inverse(self, y):
+        # We do not clamp to the boundary here as it may degrade the performance of certain algorithms.
+        # one should use `cache_size=1` instead
+        return self.atanh(y)
+
+    def log_abs_det_jacobian(self, x, y):
+        # We use a formula that is more numerically stable, see details in the following link
+        # https://github.com/tensorflow/probability/blob/master/tensorflow_probability/python/bijectors/tanh.py#L69-L80
+        return 2. * (math.log(2.) - x - softplus(-2. * x))
+
+class MLPNetwork(nn.Module):
+    
+    def __init__(self, input_dim, output_dim, hidden_size=256):
+        super(MLPNetwork, self).__init__()
+        self.network = nn.Sequential(
+                        nn.Linear(input_dim, hidden_size),
+                        nn.ReLU(),
+                        nn.Linear(hidden_size, hidden_size),
+                        nn.ReLU(),
+                        nn.Linear(hidden_size, hidden_size),
+                        nn.ReLU(),
+                        nn.Linear(hidden_size, output_dim),
+                        )
+    
+    def forward(self, x):
+        return self.network(x)
+
+
+class Policy(nn.Module):
+
+    def __init__(self, state_dim, action_dim, hidden_size=256):
+        super(Policy, self).__init__()
+        self.action_dim = action_dim
+        self.network = MLPNetwork(state_dim, action_dim * 2, hidden_size)
+
+    def forward(self, x, get_logprob=False):
+        mu_logstd = self.network(x)
+        mu, logstd = mu_logstd.chunk(2, dim=1)
+        logstd = torch.clamp(logstd, -20, 2)
+        std = logstd.exp()
+        dist = Normal(mu, std)
+        transforms = [TanhTransform(cache_size=1)]
+        dist = TransformedDistribution(dist, transforms)
+        action = dist.rsample()
+        if get_logprob:
+            logprob = dist.log_prob(action).sum(axis=-1, keepdim=True)
+        else:
+            logprob = None
+        mean = torch.tanh(mu)
+        return action, logprob, mean
+
+
+class DoubleQFunc(nn.Module):
+    
+    def __init__(self, state_dim, action_dim, hidden_size=256):
+        super(DoubleQFunc, self).__init__()
+        self.network1 = MLPNetwork(state_dim + action_dim, 1, hidden_size)
+        self.network2 = MLPNetwork(state_dim + action_dim, 1, hidden_size)
+
     def forward(self, state, action):
-        x = torch.cat([state, action], 1) # the dim 0 is number of samples
-        x = F.relu(self.linear1(x))
-        x = F.relu(self.linear2(x))
-        x = F.relu(self.linear3(x))
-        x = self.linear4(x)
-        return x
-        
-        
-class PolicyNetwork(nn.Module):
-    def __init__(self, num_inputs, num_actions, hidden_size, action_range=1., init_w=3e-3, log_std_min=-20, log_std_max=2):
-        super(PolicyNetwork, self).__init__()
-        
-        self.log_std_min = log_std_min
-        self.log_std_max = log_std_max
-        
-        self.linear1 = nn.Linear(num_inputs, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, hidden_size)
-        self.linear3 = nn.Linear(hidden_size, hidden_size)
-        self.linear4 = nn.Linear(hidden_size, hidden_size)
-
-        self.mean_linear = nn.Linear(hidden_size, num_actions)
-        self.mean_linear.weight.data.uniform_(-init_w, init_w)
-        self.mean_linear.bias.data.uniform_(-init_w, init_w)
-        
-        self.log_std_linear = nn.Linear(hidden_size, num_actions)
-        self.log_std_linear.weight.data.uniform_(-init_w, init_w)
-        self.log_std_linear.bias.data.uniform_(-init_w, init_w)
-
-        self.action_range = action_range
-        self.num_actions = num_actions
-
-        
-    def forward(self, state):
-        x = F.relu(self.linear1(state))
-        x = F.relu(self.linear2(x))
-        x = F.relu(self.linear3(x))
-        x = F.relu(self.linear4(x))
-
-        mean    = (self.mean_linear(x))
-        # mean    = F.leaky_relu(self.mean_linear(x))
-        log_std = self.log_std_linear(x)
-        log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
-        
-        return mean, log_std
-    
-    def evaluate(self, state, epsilon=1e-6):
-        '''
-        generate sampled action with state as input wrt the policy network;
-        '''
-        mean, log_std = self.forward(state)
-        std = log_std.exp() # no clip in evaluation, clip affects gradients flow
-        
-        normal = Normal(0, 1)
-        z      = normal.sample(mean.shape) 
-        action_0 = torch.tanh(mean + std*z.to(device)) # TanhNormal distribution as actions; reparameterization trick
-        action = self.action_range*action_0
-        # The log-likelihood here is for the TanhNorm distribution instead of only Gaussian distribution. \
-        # The TanhNorm forces the Gaussian with infinite action range to be finite. \
-        # For the three terms in this log-likelihood estimation: \
-        # (1). the first term is the log probability of action as in common \
-        # stochastic Gaussian action policy (without Tanh); \
-        # (2). the second term is the caused by the Tanh(), \
-        # as shown in appendix C. Enforcing Action Bounds of https://arxiv.org/pdf/1801.01290.pdf, \
-        # the epsilon is for preventing the negative cases in log; \
-        # (3). the third term is caused by the action range I used in this code is not (-1, 1) but with \
-        # an arbitrary action range, which is slightly different from original paper.
-        log_prob = Normal(mean, std).log_prob(mean+ std*z.to(device)) - torch.log(1. - action_0.pow(2) + epsilon) -  np.log(self.action_range)
-        # both dims of normal.log_prob and -log(1-a**2) are (N,dim_of_action); 
-        # the Normal.log_prob outputs the same dim of input features instead of 1 dim probability, 
-        # needs sum up across the features dim to get 1 dim prob; or else use Multivariate Normal.
-        log_prob = log_prob.sum(dim=1, keepdim=True)
-        return action, log_prob, z, mean, log_std
-        
-    
-    def get_action(self, state, deterministic):
-        state = torch.FloatTensor(state).unsqueeze(0).to(device)
-        mean, log_std = self.forward(state)
-        std = log_std.exp()
-        
-        normal = Normal(0, 1)
-        z      = normal.sample(mean.shape).to(device)
-        action = self.action_range* torch.tanh(mean + std*z)
-        
-        action = self.action_range* torch.tanh(mean).detach().cpu().numpy()[0] if deterministic else action.detach().cpu().numpy()[0]
-        return action
-
-
-    def sample_action(self,):
-        a=torch.FloatTensor(self.num_actions).uniform_(-1, 1)
-        return self.action_range*a.numpy()
+        x = torch.cat((state, action), dim=1)
+        return self.network1(x), self.network2(x)
 
 
 class SAC:
-    def __init__(self, replay_buffer, hidden_dim, action_range, state_dim, action_dim):
-        self.replay_buffer = replay_buffer
 
-        self.soft_q_net1 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
-        self.soft_q_net2 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
-        self.target_soft_q_net1 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
-        self.target_soft_q_net2 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
-        self.policy_net = PolicyNetwork(state_dim, action_dim, hidden_dim, action_range).to(device)
-        self.log_alpha = torch.zeros(1, dtype=torch.float32, requires_grad=True, device=device)
-        self.action_dim = action_dim
-        self.state_dim  = state_dim
-        print('Soft Q Network (1,2): ', self.soft_q_net1)
-        print('Policy Network: ', self.policy_net)
+    def __init__(self, seed, state_dim, action_dim, lr=3e-4, gamma=0.99, tau=5e-3, batchsize=256, hidden_size=256, update_interval=1, buffer_size=int(1e6), target_entropy=None):
+        self.gamma = gamma
+        self.tau = tau
+        self.target_entropy = target_entropy if target_entropy else -action_dim
+        self.batchsize = batchsize
+        self.update_interval = update_interval
 
-        for target_param, param in zip(self.target_soft_q_net1.parameters(), self.soft_q_net1.parameters()):
-            target_param.data.copy_(param.data)
-        for target_param, param in zip(self.target_soft_q_net2.parameters(), self.soft_q_net2.parameters()):
-            target_param.data.copy_(param.data)
+        torch.manual_seed(seed)
 
-        self.soft_q_criterion1 = nn.MSELoss()
-        self.soft_q_criterion2 = nn.MSELoss()
+        # aka critic
+        self.q_funcs = DoubleQFunc(state_dim, action_dim, hidden_size=hidden_size).to(device)
+        self.target_q_funcs = copy.deepcopy(self.q_funcs)
+        self.target_q_funcs.eval()
+        for p in self.target_q_funcs.parameters():
+            p.requires_grad = False
 
-        soft_q_lr = 3e-4
-        policy_lr = 3e-4
-        alpha_lr  = 3e-4
+        # aka actor
+        self.policy = Policy(state_dim, action_dim, hidden_size=hidden_size).to(device)
 
-        self.soft_q_optimizer1 = optim.Adam(self.soft_q_net1.parameters(), lr=soft_q_lr)
-        self.soft_q_optimizer2 = optim.Adam(self.soft_q_net2.parameters(), lr=soft_q_lr)
-        self.policy_optimizer = optim.Adam(self.policy_net.parameters(), lr=policy_lr)
-        self.alpha_optimizer = optim.Adam([self.log_alpha], lr=alpha_lr)
+        # aka temperature
+        self.log_alpha = torch.zeros(1, requires_grad=True, device=device)
 
+        self.q_optimizer = torch.optim.Adam(self.q_funcs.parameters(), lr=lr)
+        self.policy_optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr)
+        self.temp_optimizer = torch.optim.Adam([self.log_alpha], lr=lr)
+
+        self.replay_pool = ReplayPool(action_dim=action_dim, state_dim=state_dim, capacity=int(1e6))
     
-    def update(self, batch_size, reward_scale=10., auto_entropy=True, target_entropy=-2, gamma=0.99,soft_tau=1e-2):
-        state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
-        # print('sample:', state, action,  reward, done)
+    def get_action(self, state, state_filter=None, deterministic=False):
+        if state_filter:
+            state = state_filter(state)
+        with torch.no_grad():
+            action, _, mean = self.policy(torch.Tensor(state).view(1,-1).to(device))
+        if deterministic:
+            return mean.squeeze().cpu().numpy()
+        return np.atleast_1d(action.squeeze().cpu().numpy())
 
-        state      = torch.FloatTensor(state).to(device)
-        next_state = torch.FloatTensor(next_state).to(device)
-        action     = torch.FloatTensor(action).to(device)
-        reward     = torch.FloatTensor(reward).unsqueeze(1).to(device)  # reward is single value, unsqueeze() to add one dim to be [reward] at the sample dim;
-        done       = torch.FloatTensor(np.float32(done)).unsqueeze(1).to(device)
+    def update_target(self):
+        """moving average update of target networks"""
+        with torch.no_grad():
+            for target_q_param, q_param in zip(self.target_q_funcs.parameters(), self.q_funcs.parameters()):
+                target_q_param.data.copy_(self.tau * q_param.data + (1.0 - self.tau) * target_q_param.data)
 
-        predicted_q_value1 = self.soft_q_net1(state, action)
-        predicted_q_value2 = self.soft_q_net2(state, action)
-        new_action, log_prob, z, mean, log_std = self.policy_net.evaluate(state)
-        new_next_action, next_log_prob, _, _, _ = self.policy_net.evaluate(next_state)
-        reward = reward_scale * (reward - reward.mean(dim=0)) / (reward.std(dim=0) + 1e-6) # normalize with batch mean and std; plus a small number to prevent numerical problem
-    # Updating alpha wrt entropy
-        # alpha = 0.0  # trade-off between exploration (max entropy) and exploitation (max Q) 
-        if auto_entropy is True:
-            alpha_loss = -(self.log_alpha * (log_prob + target_entropy).detach()).mean()
-            # print('alpha loss: ',alpha_loss)
-            self.alpha_optimizer.zero_grad()
-            alpha_loss.backward()
-            self.alpha_optimizer.step()
-            self.alpha = self.log_alpha.exp()
-        else:
-            self.alpha = 1.
-            alpha_loss = 0
+    def update_q_functions(self, state_batch, action_batch, reward_batch, nextstate_batch, done_batch):
+        with torch.no_grad():
+            nextaction_batch, logprobs_batch, _ = self.policy(nextstate_batch, get_logprob=True)
+            q_t1, q_t2 = self.target_q_funcs(nextstate_batch, nextaction_batch)
+            # take min to mitigate positive bias in q-function training
+            q_target = torch.min(q_t1, q_t2)
+            value_target = reward_batch + (1.0 - done_batch) * self.gamma * (q_target - self.alpha * logprobs_batch)
+        q_1, q_2 = self.q_funcs(state_batch, action_batch)
+        loss_1 = F.mse_loss(q_1, value_target)
+        loss_2 = F.mse_loss(q_2, value_target)
+        return loss_1, loss_2
 
-    # Training Q Function
-        target_q_min = torch.min(self.target_soft_q_net1(next_state, new_next_action),self.target_soft_q_net2(next_state, new_next_action)) - self.alpha * next_log_prob
-        target_q_value = reward + (1 - done) * gamma * target_q_min # if done==1, only reward
-        q_value_loss1 = self.soft_q_criterion1(predicted_q_value1, target_q_value.detach())  # detach: no gradients for the variable
-        q_value_loss2 = self.soft_q_criterion2(predicted_q_value2, target_q_value.detach())
+    def update_policy_and_temp(self, state_batch):
+        action_batch, logprobs_batch, _ = self.policy(state_batch, get_logprob=True)
+        q_b1, q_b2 = self.q_funcs(state_batch, action_batch)
+        qval_batch = torch.min(q_b1, q_b2)
+        policy_loss = (self.alpha * logprobs_batch - qval_batch).mean()
+        temp_loss = -self.alpha * (logprobs_batch.detach() + self.target_entropy).mean()
+        return policy_loss, temp_loss
 
+    def optimize(self, n_updates, state_filter=None):
+        q1_loss, q2_loss, pi_loss, a_loss = 0, 0, 0, 0
+        for i in range(n_updates):
+            samples = self.replay_pool.sample(self.batchsize)
 
-        self.soft_q_optimizer1.zero_grad()
-        q_value_loss1.backward()
-        self.soft_q_optimizer1.step()
-        self.soft_q_optimizer2.zero_grad()
-        q_value_loss2.backward()
-        self.soft_q_optimizer2.step()  
+            if state_filter:
+                state_batch = torch.FloatTensor(state_filter(samples.state)).to(device)
+                nextstate_batch = torch.FloatTensor(state_filter(samples.nextstate)).to(device)
+            else:
+                state_batch = torch.FloatTensor(samples.state).to(device)
+                nextstate_batch = torch.FloatTensor(samples.nextstate).to(device)
+            action_batch = torch.FloatTensor(samples.action).to(device)
+            reward_batch = torch.FloatTensor(samples.reward).to(device).unsqueeze(1)
+            done_batch = torch.FloatTensor(samples.real_done).to(device).unsqueeze(1)
+            
+            # update q-funcs
+            q1_loss_step, q2_loss_step = self.update_q_functions(state_batch, action_batch, reward_batch, nextstate_batch, done_batch)
+            q_loss_step = q1_loss_step + q2_loss_step
+            self.q_optimizer.zero_grad()
+            q_loss_step.backward()
+            self.q_optimizer.step()
 
-    # Training Policy Function
-        predicted_new_q_value = torch.min(self.soft_q_net1(state, new_action),self.soft_q_net2(state, new_action))
-        policy_loss = (self.alpha * log_prob - predicted_new_q_value).mean()
+            # update policy and temperature parameter
+            for p in self.q_funcs.parameters():
+                p.requires_grad = False
+            pi_loss_step, a_loss_step = self.update_policy_and_temp(state_batch)
+            self.policy_optimizer.zero_grad()
+            pi_loss_step.backward()
+            self.policy_optimizer.step()
+            self.temp_optimizer.zero_grad()
+            a_loss_step.backward()
+            self.temp_optimizer.step()
+            for p in self.q_funcs.parameters():
+                p.requires_grad = True
 
-        self.policy_optimizer.zero_grad()
-        policy_loss.backward()
-        self.policy_optimizer.step()
-        
-        # print('q loss: ', q_value_loss1, q_value_loss2)
-        # print('policy loss: ', policy_loss )
+            q1_loss += q1_loss_step.detach().item()
+            q2_loss += q2_loss_step.detach().item()
+            pi_loss += pi_loss_step.detach().item()
+            a_loss += a_loss_step.detach().item()
+            if i % self.update_interval == 0:
+                self.update_target()
+        return q1_loss, q2_loss, pi_loss, a_loss
 
-
-    # Soft update the target value net
-        for target_param, param in zip(self.target_soft_q_net1.parameters(), self.soft_q_net1.parameters()):
-            target_param.data.copy_(  # copy data value into target parameters
-                target_param.data * (1.0 - soft_tau) + param.data * soft_tau
-            )
-        for target_param, param in zip(self.target_soft_q_net2.parameters(), self.soft_q_net2.parameters()):
-            target_param.data.copy_(  # copy data value into target parameters
-                target_param.data * (1.0 - soft_tau) + param.data * soft_tau
-            )
-        return predicted_new_q_value.mean()
+    @property
+    def alpha(self):
+        return self.log_alpha.exp()
 
     def save_model(self, path):
         torch.save(self.soft_q_net1.state_dict(), path+'_q1')

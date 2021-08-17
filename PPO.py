@@ -1,287 +1,312 @@
+import math
+import random
+
+import gym
+import numpy as np
+
 import torch
 import torch.nn as nn
-from torch.distributions import MultivariateNormal
-from torch.distributions import Categorical
+import torch.optim as optim
+import torch.nn.functional as F
+from torch.distributions import Normal
 
+from IPython.display import clear_output
+import matplotlib.pyplot as plt
+from matplotlib import animation
+from IPython.display import display
 
+import argparse
+import time
 
-################################## set device ##################################
-
-print("============================================================================================")
-
-
-# set device to cpu or cuda
-device = torch.device('cpu')
-
-if(torch.cuda.is_available()): 
-    device = torch.device('cuda:0') 
-    torch.cuda.empty_cache()
-    print("Device set to : " + str(torch.cuda.get_device_name(device)))
+GPU = True
+device_idx = 0
+if GPU:
+    device = torch.device("cuda:" + str(device_idx) if torch.cuda.is_available() else "cpu")
 else:
-    print("Device set to : cpu")
+    device = torch.device("cpu")
+print(device)
+
+
+
+class ReplayBuffer:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.buffer = []
+        self.position = 0
     
-print("============================================================================================")
-
-
-
-
-################################## PPO Policy ##################################
-
-
-class RolloutBuffer:
-    def __init__(self):
-        self.actions = []
-        self.states = []
-        self.logprobs = []
-        self.rewards = []
-        self.is_terminals = []
+    def push(self, state, action, reward, next_state, done):
+        if len(self.buffer) < self.capacity:
+            self.buffer.append(None)
+        self.buffer[self.position] = (state, action, reward, next_state, done)
+        self.position = int((self.position + 1) % self.capacity)  # as a ring buffer
     
-
-    def clear(self):
-        del self.actions[:]
-        del self.states[:]
-        del self.logprobs[:]
-        del self.rewards[:]
-        del self.is_terminals[:]
-
-
-class ActorCritic(nn.Module):
-    def __init__(self, state_dim, action_dim, has_continuous_action_space, action_std_init):
-        super(ActorCritic, self).__init__()
-
-        self.has_continuous_action_space = has_continuous_action_space
-
-        if has_continuous_action_space:
-            self.action_dim = action_dim
-            self.action_var = torch.full((action_dim,), action_std_init * action_std_init).to(device)
-
-        # actor
-        if has_continuous_action_space :
-            self.actor = nn.Sequential(
-                            nn.Linear(state_dim, 64),
-                            nn.Tanh(),
-                            nn.Linear(64, 64),
-                            nn.Tanh(),
-                            nn.Linear(64, action_dim),
-                            nn.Tanh()
-                        )
-        else:
-            self.actor = nn.Sequential(
-                            nn.Linear(state_dim, 64),
-                            nn.Tanh(),
-                            nn.Linear(64, 64),
-                            nn.Tanh(),
-                            nn.Linear(64, action_dim),
-                            nn.Softmax(dim=-1)
-                        )
-
-        
-        # critic
-        self.critic = nn.Sequential(
-                        nn.Linear(state_dim, 64),
-                        nn.Tanh(),
-                        nn.Linear(64, 64),
-                        nn.Tanh(),
-                        nn.Linear(64, 1)
-                    )
-        
-    def set_action_std(self, new_action_std):
-
-        if self.has_continuous_action_space:
-            self.action_var = torch.full((self.action_dim,), new_action_std * new_action_std).to(device)
-        else:
-            print("--------------------------------------------------------------------------------------------")
-            print("WARNING : Calling ActorCritic::set_action_std() on discrete action space policy")
-            print("--------------------------------------------------------------------------------------------")
-
-
-    def forward(self):
-        raise NotImplementedError
+    def sample(self, batch_size):
+        batch = random.sample(self.buffer, batch_size)
+        state, action, reward, next_state, done = map(np.stack, zip(*batch)) # stack for each element
+        ''' 
+        the * serves as unpack: sum(a,b) <=> batch=(a,b), sum(*batch) ;
+        zip: a=[1,2], b=[2,3], zip(a,b) => [(1, 2), (2, 3)] ;
+        the map serves as mapping the function on each list element: map(square, [2,3]) => [4,9] ;
+        np.stack((1,2)) => array([1, 2])
+        '''
+        return state, action, reward, next_state, done
     
+    def __len__(self):
+        return len(self.buffer)
 
-    def act(self, state):
-
-        if self.has_continuous_action_space:
-            action_mean = self.actor(state)
-            cov_mat = torch.diag(self.action_var).unsqueeze(dim=0)
-            dist = MultivariateNormal(action_mean, cov_mat)
-        else:
-            action_probs = self.actor(state)
-            dist = Categorical(action_probs)
-
-        action = dist.sample()
-        action_logprob = dist.log_prob(action)
+class NormalizedActions(gym.ActionWrapper):
+    def _action(self, action):
+        low  = self.action_space.low
+        high = self.action_space.high
         
-        return action.detach(), action_logprob.detach()
+        action = low + (action + 1.0) * 0.5 * (high - low)
+        action = np.clip(action, low, high)
+        
+        return action
+
+    def _reverse_action(self, action):
+        low  = self.action_space.low
+        high = self.action_space.high
+        
+        action = 2 * (action - low) / (high - low) - 1
+        action = np.clip(action, low, high)
+        
+        return action
+
+
+class ValueNetwork(nn.Module):
+    def __init__(self, state_dim, hidden_dim, init_w=3e-3):
+        super(ValueNetwork, self).__init__()
+        
+        self.linear1 = nn.Linear(state_dim, hidden_dim)
+        self.linear2 = nn.Linear(hidden_dim, hidden_dim)
+        self.linear3 = nn.Linear(hidden_dim, hidden_dim)
+        self.linear4 = nn.Linear(hidden_dim, 1)
+        # weights initialization
+        self.linear4.weight.data.uniform_(-init_w, init_w)
+        self.linear4.bias.data.uniform_(-init_w, init_w)
+        
+    def forward(self, state):
+        x = F.relu(self.linear1(state))
+        x = F.relu(self.linear2(x))
+        x = F.relu(self.linear3(x))
+        x = self.linear4(x)
+        return x
+        
+        
+class SoftQNetwork(nn.Module):
+    def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3):
+        super(SoftQNetwork, self).__init__()
+        
+        self.linear1 = nn.Linear(num_inputs + num_actions, hidden_size)
+        self.linear2 = nn.Linear(hidden_size, hidden_size)
+        self.linear3 = nn.Linear(hidden_size, hidden_size)
+        self.linear4 = nn.Linear(hidden_size, 1)
+        
+        self.linear4.weight.data.uniform_(-init_w, init_w)
+        self.linear4.bias.data.uniform_(-init_w, init_w)
+        
+    def forward(self, state, action):
+        x = torch.cat([state, action], 1) # the dim 0 is number of samples
+        x = F.relu(self.linear1(x))
+        x = F.relu(self.linear2(x))
+        x = F.relu(self.linear3(x))
+        x = self.linear4(x)
+        return x
+        
+        
+class PolicyNetwork(nn.Module):
+    def __init__(self, num_inputs, num_actions, hidden_size, action_range=1., init_w=3e-3, log_std_min=-20, log_std_max=2):
+        super(PolicyNetwork, self).__init__()
+        
+        self.log_std_min = log_std_min
+        self.log_std_max = log_std_max
+        
+        self.linear1 = nn.Linear(num_inputs, hidden_size)
+        self.linear2 = nn.Linear(hidden_size, hidden_size)
+        self.linear3 = nn.Linear(hidden_size, hidden_size)
+        self.linear4 = nn.Linear(hidden_size, hidden_size)
+
+        self.mean_linear = nn.Linear(hidden_size, num_actions)
+        self.mean_linear.weight.data.uniform_(-init_w, init_w)
+        self.mean_linear.bias.data.uniform_(-init_w, init_w)
+        
+        self.log_std_linear = nn.Linear(hidden_size, num_actions)
+        self.log_std_linear.weight.data.uniform_(-init_w, init_w)
+        self.log_std_linear.bias.data.uniform_(-init_w, init_w)
+
+        self.action_range = action_range
+        self.num_actions = num_actions
+
+        
+    def forward(self, state):
+        x = F.relu(self.linear1(state))
+        x = F.relu(self.linear2(x))
+        x = F.relu(self.linear3(x))
+        x = F.relu(self.linear4(x))
+
+        mean    = (self.mean_linear(x))
+        # mean    = F.leaky_relu(self.mean_linear(x))
+        log_std = self.log_std_linear(x)
+        log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
+        
+        return mean, log_std
     
-
-    def evaluate(self, state, action):
-
-        if self.has_continuous_action_space:
-            action_mean = self.actor(state)
-            
-            action_var = self.action_var.expand_as(action_mean)
-            cov_mat = torch.diag_embed(action_var).to(device)
-            dist = MultivariateNormal(action_mean, cov_mat)
-            
-            # For Single Action Environments.
-            if self.action_dim == 1:
-                action = action.reshape(-1, self.action_dim)
-
-        else:
-            action_probs = self.actor(state)
-            dist = Categorical(action_probs)
-        action_logprobs = dist.log_prob(action)
-        dist_entropy = dist.entropy()
-        state_values = self.critic(state)
+    def evaluate(self, state, epsilon=1e-6):
+        '''
+        generate sampled action with state as input wrt the policy network;
+        '''
+        mean, log_std = self.forward(state)
+        std = log_std.exp() # no clip in evaluation, clip affects gradients flow
         
-        return action_logprobs, state_values, dist_entropy
-
-
-class PPO:
-    def __init__(self, state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std_init=0.6):
-
-        self.has_continuous_action_space = has_continuous_action_space
-
-        if has_continuous_action_space:
-            self.action_std = action_std_init
-
-        self.gamma = gamma
-        self.eps_clip = eps_clip
-        self.K_epochs = K_epochs
+        normal = Normal(0, 1)
+        z      = normal.sample(mean.shape) 
+        action_0 = torch.tanh(mean + std*z.to(device)) # TanhNormal distribution as actions; reparameterization trick
+        action = self.action_range*action_0
+        # The log-likelihood here is for the TanhNorm distribution instead of only Gaussian distribution. \
+        # The TanhNorm forces the Gaussian with infinite action range to be finite. \
+        # For the three terms in this log-likelihood estimation: \
+        # (1). the first term is the log probability of action as in common \
+        # stochastic Gaussian action policy (without Tanh); \
+        # (2). the second term is the caused by the Tanh(), \
+        # as shown in appendix C. Enforcing Action Bounds of https://arxiv.org/pdf/1801.01290.pdf, \
+        # the epsilon is for preventing the negative cases in log; \
+        # (3). the third term is caused by the action range I used in this code is not (-1, 1) but with \
+        # an arbitrary action range, which is slightly different from original paper.
+        log_prob = Normal(mean, std).log_prob(mean+ std*z.to(device)) - torch.log(1. - action_0.pow(2) + epsilon) -  np.log(self.action_range)
+        # both dims of normal.log_prob and -log(1-a**2) are (N,dim_of_action); 
+        # the Normal.log_prob outputs the same dim of input features instead of 1 dim probability, 
+        # needs sum up across the features dim to get 1 dim prob; or else use Multivariate Normal.
+        log_prob = log_prob.sum(dim=1, keepdim=True)
+        return action, log_prob, z, mean, log_std
         
-        self.buffer = RolloutBuffer()
-
-        self.policy = ActorCritic(state_dim, action_dim, has_continuous_action_space, action_std_init).to(device)
-        self.optimizer = torch.optim.Adam([
-                        {'params': self.policy.actor.parameters(), 'lr': lr_actor},
-                        {'params': self.policy.critic.parameters(), 'lr': lr_critic}
-                    ])
-
-        self.policy_old = ActorCritic(state_dim, action_dim, has_continuous_action_space, action_std_init).to(device)
-        self.policy_old.load_state_dict(self.policy.state_dict())
-        
-        self.MseLoss = nn.MSELoss()
-
-
-    def set_action_std(self, new_action_std):
-        
-        if self.has_continuous_action_space:
-            self.action_std = new_action_std
-            self.policy.set_action_std(new_action_std)
-            self.policy_old.set_action_std(new_action_std)
-        
-        else:
-            print("--------------------------------------------------------------------------------------------")
-            print("WARNING : Calling PPO::set_action_std() on discrete action space policy")
-            print("--------------------------------------------------------------------------------------------")
-
-
-    def decay_action_std(self, action_std_decay_rate, min_action_std):
-        print("--------------------------------------------------------------------------------------------")
-
-        if self.has_continuous_action_space:
-            self.action_std = self.action_std - action_std_decay_rate
-            self.action_std = round(self.action_std, 4)
-            if (self.action_std <= min_action_std):
-                self.action_std = min_action_std
-                print("setting actor output action_std to min_action_std : ", self.action_std)
-            else:
-                print("setting actor output action_std to : ", self.action_std)
-            self.set_action_std(self.action_std)
-
-        else:
-            print("WARNING : Calling PPO::decay_action_std() on discrete action space policy")
-
-        print("--------------------------------------------------------------------------------------------")
-
-
-    def select_action(self, state):
-        if self.has_continuous_action_space:
-            with torch.no_grad():
-                state = torch.FloatTensor(state).to(device)
-                action, action_logprob = self.policy_old.act(state)
-
-            self.buffer.states.append(state)
-            self.buffer.actions.append(action)
-            self.buffer.logprobs.append(action_logprob)
-
-            return action.detach().cpu().numpy().flatten()
-
-        else:
-            with torch.no_grad():
-                state = torch.FloatTensor(state).to(device)
-                action, action_logprob = self.policy_old.act(state)
-            
-            self.buffer.states.append(state)
-            self.buffer.actions.append(action)
-            self.buffer.logprobs.append(action_logprob)
-
-            return action.item()
-
-
-    def update(self):
-
-        # Monte Carlo estimate of returns
-        rewards = []
-        discounted_reward = 0
-        for reward, is_terminal in zip(reversed(self.buffer.rewards), reversed(self.buffer.is_terminals)):
-            if is_terminal:
-                discounted_reward = 0
-            discounted_reward = reward + (self.gamma * discounted_reward)
-            rewards.insert(0, discounted_reward)
-            
-        # Normalizing the rewards
-        rewards = torch.tensor(rewards, dtype=torch.float32).to(device)
-        rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-7)
-
-        # convert list to tensor
-        old_states = torch.squeeze(torch.stack(self.buffer.states, dim=0)).detach().to(device)
-        old_actions = torch.squeeze(torch.stack(self.buffer.actions, dim=0)).detach().to(device)
-        old_logprobs = torch.squeeze(torch.stack(self.buffer.logprobs, dim=0)).detach().to(device)
-
-        
-        # Optimize policy for K epochs
-        for _ in range(self.K_epochs):
-
-            # Evaluating old actions and values
-            logprobs, state_values, dist_entropy = self.policy.evaluate(old_states, old_actions)
-
-            # match state_values tensor dimensions with rewards tensor
-            state_values = torch.squeeze(state_values)
-            
-            # Finding the ratio (pi_theta / pi_theta__old)
-            ratios = torch.exp(logprobs - old_logprobs.detach())
-
-            # Finding Surrogate Loss
-            advantages = rewards - state_values.detach()   
-            surr1 = ratios * advantages
-            surr2 = torch.clamp(ratios, 1-self.eps_clip, 1+self.eps_clip) * advantages
-
-            # final loss of clipped objective PPO
-            loss = -torch.min(surr1, surr2) + 0.5*self.MseLoss(state_values, rewards) - 0.01*dist_entropy
-            
-            # take gradient step
-            self.optimizer.zero_grad()
-            loss.mean().backward()
-            self.optimizer.step()
-            
-        # Copy new weights into old policy
-        self.policy_old.load_state_dict(self.policy.state_dict())
-
-        # clear buffer
-        self.buffer.clear()
     
+    def get_action(self, state, deterministic):
+        state = torch.FloatTensor(state).unsqueeze(0).to(device)
+        mean, log_std = self.forward(state)
+        std = log_std.exp()
+        
+        normal = Normal(0, 1)
+        z      = normal.sample(mean.shape).to(device)
+        action = self.action_range* torch.tanh(mean + std*z)
+        
+        action = self.action_range* torch.tanh(mean).detach().cpu().numpy()[0] if deterministic else action.detach().cpu().numpy()[0]
+        return action
+
+
+    def sample_action(self,):
+        a=torch.FloatTensor(self.num_actions).uniform_(-1, 1)
+        return self.action_range*a.numpy()
+
+
+class SAC:
+    def __init__(self, replay_buffer, hidden_dim, action_range, state_dim, action_dim):
+        self.replay_buffer = replay_buffer
+
+        self.soft_q_net1 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
+        self.soft_q_net2 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
+        self.target_soft_q_net1 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
+        self.target_soft_q_net2 = SoftQNetwork(state_dim, action_dim, hidden_dim).to(device)
+        self.policy_net = PolicyNetwork(state_dim, action_dim, hidden_dim, action_range).to(device)
+        self.log_alpha = torch.zeros(1, dtype=torch.float32, requires_grad=True, device=device)
+        self.action_dim = action_dim
+        self.state_dim  = state_dim
+        print('Soft Q Network (1,2): ', self.soft_q_net1)
+        print('Policy Network: ', self.policy_net)
+
+        for target_param, param in zip(self.target_soft_q_net1.parameters(), self.soft_q_net1.parameters()):
+            target_param.data.copy_(param.data)
+        for target_param, param in zip(self.target_soft_q_net2.parameters(), self.soft_q_net2.parameters()):
+            target_param.data.copy_(param.data)
+
+        self.soft_q_criterion1 = nn.MSELoss()
+        self.soft_q_criterion2 = nn.MSELoss()
+
+        soft_q_lr = 3e-4
+        policy_lr = 3e-4
+        alpha_lr  = 3e-4
+
+        self.soft_q_optimizer1 = optim.Adam(self.soft_q_net1.parameters(), lr=soft_q_lr)
+        self.soft_q_optimizer2 = optim.Adam(self.soft_q_net2.parameters(), lr=soft_q_lr)
+        self.policy_optimizer = optim.Adam(self.policy_net.parameters(), lr=policy_lr)
+        self.alpha_optimizer = optim.Adam([self.log_alpha], lr=alpha_lr)
+
     
-    def save(self, checkpoint_path):
-        torch.save(self.policy_old.state_dict(), checkpoint_path)
-   
+    def update(self, batch_size, reward_scale=10., auto_entropy=True, target_entropy=-2, gamma=0.99,soft_tau=1e-2):
+        state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
+        # print('sample:', state, action,  reward, done)
 
-    def load(self, checkpoint_path):
-        self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        state      = torch.FloatTensor(state).to(device)
+        next_state = torch.FloatTensor(next_state).to(device)
+        action     = torch.FloatTensor(action).to(device)
+        reward     = torch.FloatTensor(reward).unsqueeze(1).to(device)  # reward is single value, unsqueeze() to add one dim to be [reward] at the sample dim;
+        done       = torch.FloatTensor(np.float32(done)).unsqueeze(1).to(device)
+
+        predicted_q_value1 = self.soft_q_net1(state, action)
+        predicted_q_value2 = self.soft_q_net2(state, action)
+        new_action, log_prob, z, mean, log_std = self.policy_net.evaluate(state)
+        new_next_action, next_log_prob, _, _, _ = self.policy_net.evaluate(next_state)
+        reward = reward_scale * (reward - reward.mean(dim=0)) / (reward.std(dim=0) + 1e-6) # normalize with batch mean and std; plus a small number to prevent numerical problem
+    # Updating alpha wrt entropy
+        # alpha = 0.0  # trade-off between exploration (max entropy) and exploitation (max Q) 
+        if auto_entropy is True:
+            alpha_loss = -(self.log_alpha * (log_prob + target_entropy).detach()).mean()
+            # print('alpha loss: ',alpha_loss)
+            self.alpha_optimizer.zero_grad()
+            alpha_loss.backward()
+            self.alpha_optimizer.step()
+            self.alpha = self.log_alpha.exp()
+        else:
+            self.alpha = 1.
+            alpha_loss = 0
+
+    # Training Q Function
+        target_q_min = torch.min(self.target_soft_q_net1(next_state, new_next_action),self.target_soft_q_net2(next_state, new_next_action)) - self.alpha * next_log_prob
+        target_q_value = reward + (1 - done) * gamma * target_q_min # if done==1, only reward
+        q_value_loss1 = self.soft_q_criterion1(predicted_q_value1, target_q_value.detach())  # detach: no gradients for the variable
+        q_value_loss2 = self.soft_q_criterion2(predicted_q_value2, target_q_value.detach())
+
+
+        self.soft_q_optimizer1.zero_grad()
+        q_value_loss1.backward()
+        self.soft_q_optimizer1.step()
+        self.soft_q_optimizer2.zero_grad()
+        q_value_loss2.backward()
+        self.soft_q_optimizer2.step()  
+
+    # Training Policy Function
+        predicted_new_q_value = torch.min(self.soft_q_net1(state, new_action),self.soft_q_net2(state, new_action))
+        policy_loss = (self.alpha * log_prob - predicted_new_q_value).mean()
+
+        self.policy_optimizer.zero_grad()
+        policy_loss.backward()
+        self.policy_optimizer.step()
         
-        
-       
+        # print('q loss: ', q_value_loss1, q_value_loss2)
+        # print('policy loss: ', policy_loss )
 
 
+    # Soft update the target value net
+        for target_param, param in zip(self.target_soft_q_net1.parameters(), self.soft_q_net1.parameters()):
+            target_param.data.copy_(  # copy data value into target parameters
+                target_param.data * (1.0 - soft_tau) + param.data * soft_tau
+            )
+        for target_param, param in zip(self.target_soft_q_net2.parameters(), self.soft_q_net2.parameters()):
+            target_param.data.copy_(  # copy data value into target parameters
+                target_param.data * (1.0 - soft_tau) + param.data * soft_tau
+            )
+        return predicted_new_q_value.mean()
+
+    def save_model(self, path):
+        torch.save(self.soft_q_net1.state_dict(), path+'_q1')
+        torch.save(self.soft_q_net2.state_dict(), path+'_q2')
+        torch.save(self.policy_net.state_dict(), path+'_policy')
+
+    def load_model(self, path):
+        self.soft_q_net1.load_state_dict(torch.load(path+'_q1'))
+        self.soft_q_net2.load_state_dict(torch.load(path+'_q2'))
+        self.policy_net.load_state_dict(torch.load(path+'_policy'))
+
+        self.soft_q_net1.eval()
+        self.soft_q_net2.eval()
+        self.policy_net.eval()
