@@ -28,7 +28,7 @@ def train():
     # env_name = "RoboschoolHalfCheetah-v1"
     # env_name = "jbdl_half_cheetah-v0"
     # env_name = "jbdl_half_cheetah-v0"
-    env_name = "jbdl_arm-v0"
+    env_name = "jbdl_cartpole-v1"
 
     has_continuous_action_space = True  # continuous action space; else discrete
 
@@ -184,16 +184,13 @@ def train():
 
     ################# training procedure ################
 
-    # initialize a SAC agent
-
     replay_buffer_size = 1e6
     replay_buffer = ReplayBuffer(replay_buffer_size)
     action_range=1
     hidden_dim = 512
-
-
+    # initialize a SAC agent
+    #SAC_agent = SAC(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
     SAC_agent = SAC(replay_buffer, hidden_dim=hidden_dim, action_range=action_range, state_dim = state_dim, action_dim = action_dim)
-
 
     # track total training time
     start_time = datetime.now().replace(microsecond=0)
@@ -293,6 +290,8 @@ def train():
         log_running_episodes += 1
 
         i_episode += 1
+
+
 
 
     log_f.close()
