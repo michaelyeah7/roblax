@@ -210,6 +210,8 @@ def train():
 
     time_step = 0
     i_episode = 0
+    
+
 
 
     # training loop
