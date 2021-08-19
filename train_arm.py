@@ -223,7 +223,7 @@ def train():
         state = env.reset()
         current_ep_reward = 0
 
-        for i_episode in range(1, max_ep_len+1):
+        for t in range(1, max_ep_len+1):
 
             state = state.reshape((1,state_dim))
 
