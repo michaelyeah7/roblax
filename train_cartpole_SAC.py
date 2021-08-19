@@ -220,10 +220,10 @@ def train():
         scores_deque = deque(maxlen=100)
         average_100_scores = []
 
-        for i_episode in range(1, max_ep_len+1):
+        state = env.reset()
+        current_ep_reward = 0
 
-            state = env.reset()
-            current_ep_reward = 0
+        for i_episode in range(1, max_ep_len+1):
             state = state.reshape((1,state_dim))
 
             action = SAC_agent.act(state)
