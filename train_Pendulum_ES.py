@@ -13,7 +13,7 @@ from collections import namedtuple, deque
 
 # import pybullet_envs
 
-from SAC import SAC,ReplayBuffer
+from ES import EvolutionStrategies
 
 
 
@@ -52,12 +52,12 @@ def train():
     ## Note : print/log frequencies should be > than max_ep_len
 
 
-    ################ SAC hyperparameters ################
+    ################ ES hyperparameters ################
 
     update_timestep = max_ep_len * 4      # update policy every n timesteps
-    K_epochs = 80               # update policy for K epochs in one SAC update
+    K_epochs = 80               # update policy for K epochs in one ES update
 
-    eps_clip = 0.2          # clip parameter for SAC
+    eps_clip = 0.2          # clip parameter for ES
     gamma = 0.99            # discount factor
 
     lr_actor = 0.0003       # learning rate for actor network
@@ -88,7 +88,7 @@ def train():
 
     #### log files for multiple runs are NOT overwritten
 
-    log_dir = "SAC_logs_forward_reward_joint_limit"
+    log_dir = "ES_logs_forward_reward_joint_limit"
     if not os.path.exists(log_dir):
           os.makedirs(log_dir)
 
@@ -104,7 +104,7 @@ def train():
 
 
     #### create new log file for each run
-    log_f_name = log_dir + '/SAC_' + env_name + "_log_" + str(run_num) + ".csv"
+    log_f_name = log_dir + '/ES_' + env_name + "_log_" + str(run_num) + ".csv"
 
     print("current logging run number for " + env_name + " : ", run_num)
     print("logging at : " + log_f_name)
@@ -116,7 +116,7 @@ def train():
 
     run_num_pretrained = 0      #### change this to prevent overwriting weights in same env_name folder
 
-    directory = "SAC_preTrained_forward_reward_joint_limit"
+    directory = "ES_preTrained_forward_reward_joint_limit"
     if not os.path.exists(directory):
           os.makedirs(directory)
 
@@ -125,7 +125,7 @@ def train():
           os.makedirs(directory)
 
 
-    checkpoint_path = directory + "SAC_{}_{}_{}.pth".format(env_name, random_seed, run_num_pretrained)
+    checkpoint_path = directory + "ES_{}_{}_{}.pth".format(env_name, random_seed, run_num_pretrained)
     print("save checkpoint path : " + checkpoint_path)
 
     #####################################################
@@ -162,9 +162,9 @@ def train():
 
     print("--------------------------------------------------------------------------------------------")
 
-    print("SAC update frequency : " + str(update_timestep) + " timesteps")
-    print("SAC K epochs : ", K_epochs)
-    print("SAC epsilon clip : ", eps_clip)
+    print("ES update frequency : " + str(update_timestep) + " timesteps")
+    print("ES K epochs : ", K_epochs)
+    print("ES epsilon clip : ", eps_clip)
     print("discount factor (gamma) : ", gamma)
 
     print("--------------------------------------------------------------------------------------------")
@@ -186,9 +186,14 @@ def train():
     ################# training procedure ################
 
     
-    # initialize a SAC agent
-    #SAC_agent = SAC(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
-    SAC_agent = SAC(state_size=state_dim, action_size=action_dim, random_seed=0,hidden_size=256, action_prior="uniform")
+    # initialize a ES agent
+    #ES_agent = ES(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
+    INPUTS = 4
+    HIDDEN = 8
+    OUTPUTS = 2
+    TARGET = 190
+    POPULATION = 5
+    ES_agent = EvolutionStrategies(INPUTS, HIDDEN, OUTPUTS, TARGET, POPULATION)
 
     # track total training time
     start_time = datetime.now().replace(microsecond=0)
@@ -217,30 +222,16 @@ def train():
 
     # training loop
     while time_step <= max_training_timesteps:
-        scores_deque = deque(maxlen=100)
-        average_100_scores = []
-
         state = env.reset()
         current_ep_reward = 0
-
         for i_episode in range(1, max_ep_len+1):
-            state = state.reshape((1,state_dim))
-
-            action = SAC_agent.act(state)
-            action_v = action.numpy()
-            action_v = np.clip(action_v*action_high, action_low, action_high)
-            next_state, reward, done, info = env.step(action_v)
-            next_state = next_state.reshape((1,state_dim))
-            SAC_agent.step(state, action, reward, next_state, done, time_step)
-            state = next_state
+            action = ES_agent.forward(torch.FloatTensor(state)).detach()
+            
+            state, reward, done, _ = env.step(action)
             current_ep_reward += reward
-            time_step +=1
-
             if done:
                 break 
             
-            scores_deque.append(current_ep_reward)
-            average_100_scores.append(np.mean(scores_deque))
         
 
             # log in logging file
@@ -272,7 +263,7 @@ def train():
             if time_step % save_model_freq == 0:
                 print("--------------------------------------------------------------------------------------------")
                 print("saving model at : " + checkpoint_path)
-                SAC_agent.save(checkpoint_path)
+                ES_agent.save(checkpoint_path)
                 print("model saved")
                 print("Elapsed Time  : ", datetime.now().replace(microsecond=0) - start_time)
                 print("--------------------------------------------------------------------------------------------")
