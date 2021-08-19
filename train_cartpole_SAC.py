@@ -8,6 +8,7 @@ import numpy as np
 
 import gym
 import gym_rbdl
+from collections import namedtuple, deque
 # import roboschool
 
 # import pybullet_envs
@@ -184,13 +185,10 @@ def train():
 
     ################# training procedure ################
 
-    replay_buffer_size = 1e6
-    replay_buffer = ReplayBuffer(replay_buffer_size)
-    action_range=1
-    hidden_dim = 512
+    
     # initialize a SAC agent
     #SAC_agent = SAC(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
-    SAC_agent = SAC(replay_buffer, hidden_dim=hidden_dim, action_range=action_range, state_dim = state_dim, action_dim = action_dim)
+    SAC_agent = SAC(state_size=state_dim, action_size=action_dim, random_seed=0,hidden_size=256, action_prior="uniform")
 
     # track total training time
     start_time = datetime.now().replace(microsecond=0)
@@ -214,38 +212,36 @@ def train():
     time_step = 0
     i_episode = 0
 
-    frame_idx   = 0
-    explore_steps = 0
-    batch_size  = 300
-    update_itr = 1
-
-
-    AUTO_ENTROPY=True
-    DETERMINISTIC = False
+    action_high = env.action_space.high[0]
+    action_low = env.action_space.low[0]
 
     # training loop
     while time_step <= max_training_timesteps:
-        for eps in range(1, max_ep_len+1):
-            state =  env.reset()
-            current_ep_reward = 0
+        scores_deque = deque(maxlen=100)
+        average_100_scores = []
 
-            if frame_idx > explore_steps:
-                action = SAC_agent.policy_net.get_action(state, deterministic = DETERMINISTIC)
-            else:
-                action = SAC_agent.policy_net.sample_action()
+        state = env.reset()
+        current_ep_reward = 0
 
-            next_state, reward, done, _ = env.step(action)
-                
-            replay_buffer.push(state, action, reward, next_state, done)
-            
+        for t in range(1, max_ep_len+1):
+            state = state.reshape((1,state_dim))
+
+            action = SAC_agent.act(state)
+            action_v = action.numpy()
+            action_v = np.clip(action_v*action_high, action_low, action_high)
+            next_state, reward, done, info = env.step(action_v)
+            next_state = next_state.reshape((1,state_dim))
+            SAC_agent.step(state, action, reward, next_state, done, time_step)
             state = next_state
             current_ep_reward += reward
-            frame_idx += 1
             time_step +=1
+
+            if done:
+                break 
             
-            if len(replay_buffer) > batch_size:
-                for i in range(update_itr):
-                    _=SAC_agent.update(batch_size, reward_scale=10., auto_entropy=AUTO_ENTROPY, target_entropy=-1.*action_dim)
+            scores_deque.append(current_ep_reward)
+            average_100_scores.append(np.mean(scores_deque))
+        
 
             # log in logging file
             if time_step % log_freq == 0:
