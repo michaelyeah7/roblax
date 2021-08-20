@@ -233,6 +233,7 @@ def train():
             next_state = next_state.reshape((1,state_dim))
             SAC_agent.step(state, action, reward, next_state, done, time_step)
             state = next_state
+            env.osim_render()
             current_ep_reward += reward
             time_step +=1
 
