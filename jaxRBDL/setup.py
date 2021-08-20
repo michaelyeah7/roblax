@@ -65,7 +65,7 @@ class CMakeBuildExt(build_ext):
         ]
         if os.environ.get("WITH_JAX_CUDA", "no").lower() == "yes":
             cmake_args.append("-DCUDA_SUPPORT=ON")
-            cmake_args.append("-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc")
+            cmake_args.append("-DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.2/bin/nvcc")
 
         pathlib.Path(self.build_temp).mkdir(parents=True, exist_ok=True)
         subprocess.check_call(
@@ -91,7 +91,7 @@ class CMakeBuildExt(build_ext):
             cmake_args_osqp += ['-DPYTHON=ON']
             cmake_args_osqp += ['-DCUDA_SUPPORT=ON', '-DDFLOAT=ON', '-DDLONG=OFF']
             cmake_args_osqp += ['-DPYTHON_INCLUDE_DIRS=%s' % distutils.sysconfig.get_python_inc()]
-            cmake_args_osqp += ['-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc']
+            cmake_args_osqp += ['-DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.2/bin/nvcc']
 
             current_dir = os.getcwd()
             osqp_dir = os.path.join(current_dir, 'src/jbdl/experimental/cuosqp/osqp_sources')
