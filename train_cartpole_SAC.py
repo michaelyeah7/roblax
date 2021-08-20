@@ -236,6 +236,10 @@ def train():
             state = next_state
             env.osim_render()
             #print(state)
+            
+            SAC_agent.buffer.rewards.append(reward)
+            SAC_agent.buffer.is_terminals.append(done)
+
             current_ep_reward += reward
             time_step +=1
 
