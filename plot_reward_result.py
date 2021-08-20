@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 
 
 arm_result = pd.read_csv('arm_result.txt')
-cartpole_result = pd.read_csv('SAC_cartpole_result.csv')
+cartpole_result = pd.read_csv('cartpole_result.txt')
 Pendulum_result = pd.read_csv('SAC_Pendulum_result.csv')
 
-temp = Pendulum_result['Average Reward'].diff()/Pendulum_result['Average Reward']
+temp = cartpole_result['Average Reward'].diff()/cartpole_result['Average Reward']
 print(temp)
 count = 0
 for i in range(len(temp)):
@@ -19,5 +19,5 @@ for i in range(len(temp)):
 
 
 plt.figure()
-plt.plot(Pendulum_result['Timestep'][:i],Pendulum_result['Average Reward'][:i])
+plt.plot(cartpole_result['Timestep'][:i],cartpole_result['Average Reward'][:i])
 plt.show()
