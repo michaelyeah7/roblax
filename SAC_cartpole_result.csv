@@ -1,4 +1,4 @@
- Episode,Timestep,Average Reward
+ Episode,timestep,reward
  1166,5000, -777.34
  2357,10000, -673.1
  3550,15000, -669.14
