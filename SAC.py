@@ -139,6 +139,7 @@ class SAC():
         self.action_size = action_size
         self.seed = random.seed(random_seed)
         self.TAU=1e-2
+        self.buffer = RolloutBuffer()
         
         self.target_entropy = -action_size  # -dim(A)
         self.alpha = 1
@@ -292,6 +293,23 @@ class SAC():
         self.actor_local.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
 
         self.actor_local.eval()
+
+class RolloutBuffer:
+    def __init__(self):
+        self.actions = []
+        self.states = []
+        self.logprobs = []
+        self.rewards = []
+        self.is_terminals = []
+    
+
+    def clear(self):
+        del self.actions[:]
+        del self.states[:]
+        del self.logprobs[:]
+        del self.rewards[:]
+        del self.is_terminals[:]
+
 
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""

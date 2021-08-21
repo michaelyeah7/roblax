@@ -217,18 +217,21 @@ def train():
     time_step = 0
     i_episode = 0
 
-    action_high = env.action_space.high[0]
-    action_low = env.action_space.low[0]
+
+    short_ma = deque(maxlen=5)
+    long_ma = deque(maxlen=10)
 
     # training loop
     while time_step <= max_training_timesteps:
         state = env.reset()
         current_ep_reward = 0
-        for i_episode in range(1, max_ep_len+1):
-            action = ES_agent.forward(torch.FloatTensor(state)).detach()
+        for t in range(1, max_ep_len+1):
+            action = ES_agent.forward(torch.FloatTensor(state)).detach().numpy()
+
             
             state, reward, done, _ = env.step(action)
             current_ep_reward += reward
+            time_step += 1
             if done:
                 break 
             
@@ -269,6 +272,7 @@ def train():
                 print("--------------------------------------------------------------------------------------------")
 
             if done:
+                ES_agent.log_reward(current_ep_reward)
                 break
         print_running_reward += current_ep_reward
         print_running_episodes += 1

@@ -8,12 +8,11 @@ import numpy as np
 
 import gym
 import gym_rbdl
-from collections import namedtuple, deque
 # import roboschool
 
 # import pybullet_envs
 
-from SAC import SAC,ReplayBuffer
+from PPO import PPO
 
 
 
@@ -29,6 +28,7 @@ def train():
     # env_name = "RoboschoolHalfCheetah-v1"
     # env_name = "jbdl_half_cheetah-v0"
     # env_name = "jbdl_half_cheetah-v0"
+    # env_name = "jbdl_cartpole-v1"
     env_name = "jbdl_arm-v0"
 
     has_continuous_action_space = True  # continuous action space; else discrete
@@ -52,12 +52,12 @@ def train():
     ## Note : print/log frequencies should be > than max_ep_len
 
 
-    ################ SAC hyperparameters ################
+    ################ PPO hyperparameters ################
 
     update_timestep = max_ep_len * 4      # update policy every n timesteps
-    K_epochs = 80               # update policy for K epochs in one SAC update
+    K_epochs = 80               # update policy for K epochs in one PPO update
 
-    eps_clip = 0.2          # clip parameter for SAC
+    eps_clip = 0.2          # clip parameter for PPO
     gamma = 0.99            # discount factor
 
     lr_actor = 0.0003       # learning rate for actor network
@@ -88,7 +88,7 @@ def train():
 
     #### log files for multiple runs are NOT overwritten
 
-    log_dir = "SAC_logs_forward_reward_joint_limit"
+    log_dir = "PPO_logs_forward_reward_joint_limit"
     if not os.path.exists(log_dir):
           os.makedirs(log_dir)
 
@@ -104,7 +104,7 @@ def train():
 
 
     #### create new log file for each run
-    log_f_name = log_dir + '/SAC_' + env_name + "_log_" + str(run_num) + ".csv"
+    log_f_name = log_dir + '/PPO_' + env_name + "_log_" + str(run_num) + ".csv"
 
     print("current logging run number for " + env_name + " : ", run_num)
     print("logging at : " + log_f_name)
@@ -116,7 +116,7 @@ def train():
 
     run_num_pretrained = 0      #### change this to prevent overwriting weights in same env_name folder
 
-    directory = "SAC_preTrained_forward_reward_joint_limit"
+    directory = "PPO_preTrained_forward_reward_joint_limit"
     if not os.path.exists(directory):
           os.makedirs(directory)
 
@@ -125,7 +125,7 @@ def train():
           os.makedirs(directory)
 
 
-    checkpoint_path = directory + "SAC_{}_{}_{}.pth".format(env_name, random_seed, run_num_pretrained)
+    checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, run_num_pretrained)
     print("save checkpoint path : " + checkpoint_path)
 
     #####################################################
@@ -162,9 +162,9 @@ def train():
 
     print("--------------------------------------------------------------------------------------------")
 
-    print("SAC update frequency : " + str(update_timestep) + " timesteps")
-    print("SAC K epochs : ", K_epochs)
-    print("SAC epsilon clip : ", eps_clip)
+    print("PPO update frequency : " + str(update_timestep) + " timesteps")
+    print("PPO K epochs : ", K_epochs)
+    print("PPO epsilon clip : ", eps_clip)
     print("discount factor (gamma) : ", gamma)
 
     print("--------------------------------------------------------------------------------------------")
@@ -185,10 +185,9 @@ def train():
 
     ################# training procedure ################
 
-    
-    # initialize a SAC agent
-    #SAC_agent = SAC(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
-    SAC_agent = SAC(state_size=state_dim, action_size=action_dim, random_seed=0,hidden_size=256, action_prior="uniform")
+    # initialize a PPO agent
+    ppo_agent = PPO(state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, has_continuous_action_space, action_std)
+
 
     # track total training time
     start_time = datetime.now().replace(microsecond=0)
@@ -211,45 +210,44 @@ def train():
 
     time_step = 0
     i_episode = 0
+    
 
-    action_high = env.action_space.high[0]
-    action_low = env.action_space.low[0]
+
 
     # training loop
     while time_step <= max_training_timesteps:
-        scores_deque = deque(maxlen=100)
-        average_100_scores = []
 
         state = env.reset()
         current_ep_reward = 0
 
         for t in range(1, max_ep_len+1):
 
-            state = state.reshape((1,state_dim))
-
-            action = SAC_agent.act(state)
-            action_v = action.numpy()
-            action_v = np.clip(action_v*action_high, action_low, action_high)
-            next_state, reward, done, info = env.step(action_v)
-            next_state = next_state.reshape((1,state_dim))
-            SAC_agent.step(state, action, reward, next_state, done, time_step)
-            state = next_state
+            # select action with policy
+            action = ppo_agent.select_action(state)
+            # action.clip 
+            state, reward, done, _ = env.step(action)
+            # print("action",action)
+            # print("state",state)
+            # env.plt_render()
             env.osim_render()
+            # print("action",type(action))
+            # print("state",state)
+            # print("reward",type(reward))
 
-            SAC_agent.buffer.rewards.append(reward)
-            SAC_agent.buffer.is_terminals.append(done)
-            
-            current_ep_reward += reward
-
+            # saving reward and is_terminals
+            ppo_agent.buffer.rewards.append(reward)
+            ppo_agent.buffer.is_terminals.append(done)
 
             time_step +=1
+            current_ep_reward += reward
 
-            if done:
-                break 
-            
-            scores_deque.append(current_ep_reward)
-            average_100_scores.append(np.mean(scores_deque))
-        
+            # update PPO agent
+            if time_step % update_timestep == 0:
+                ppo_agent.update()
+
+            # if continuous action space; then decay action std of ouput action distribution
+            if has_continuous_action_space and time_step % action_std_decay_freq == 0:
+                ppo_agent.decay_action_std(action_std_decay_rate, min_action_std)
 
             # log in logging file
             if time_step % log_freq == 0:
@@ -280,13 +278,15 @@ def train():
             if time_step % save_model_freq == 0:
                 print("--------------------------------------------------------------------------------------------")
                 print("saving model at : " + checkpoint_path)
-                SAC_agent.save(checkpoint_path)
+                ppo_agent.save(checkpoint_path)
                 print("model saved")
                 print("Elapsed Time  : ", datetime.now().replace(microsecond=0) - start_time)
                 print("--------------------------------------------------------------------------------------------")
 
+            # break; if the episode is over
             if done:
                 break
+
         print_running_reward += current_ep_reward
         print_running_episodes += 1
 
@@ -294,8 +294,6 @@ def train():
         log_running_episodes += 1
 
         i_episode += 1
-
-
 
 
     log_f.close()
