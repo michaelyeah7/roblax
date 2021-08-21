@@ -233,12 +233,15 @@ def train():
             next_state = next_state.reshape((1,state_dim))
             SAC_agent.step(state, action, reward, next_state, done, time_step)
             state = next_state
+            env.osim_render()
+            SAC_agent.buffer.rewards.append(reward)
+            SAC_agent.buffer.is_terminals.append(done)
             current_ep_reward += reward
             time_step +=1
 
             if done:
                 break 
-            
+
             scores_deque.append(current_ep_reward)
             average_100_scores.append(np.mean(scores_deque))
         
