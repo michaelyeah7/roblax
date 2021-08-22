@@ -157,7 +157,7 @@ if os.environ.get("WITH_JAX_CUDA", "no").lower() == "yes":
 
     # Make sure the environment variable CUDA_PATH
     # is set to the CUDA Toolkit install directory.
-    CUDA_PATH = '/usr/local/cuda'
+    CUDA_PATH = '/usr/local/cuda-11.2'
     library_dirs = [os.path.join(CUDA_PATH, 'lib64')]
 
     current_dir = os.getcwd()
