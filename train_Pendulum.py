@@ -247,7 +247,7 @@ def train():
         
 
             # log in logging file
-            if time_step % log_freq == 0:
+            if i_episode and log_running_episodes != 0:
 
                 # log average reward till last episode
                 log_avg_reward = log_running_reward / log_running_episodes
