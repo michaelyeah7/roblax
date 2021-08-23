@@ -250,7 +250,7 @@ def train():
                 ppo_agent.decay_action_std(action_std_decay_rate, min_action_std)
 
             # log in logging file
-            if time_step % log_freq == 0:
+            if i_episode and log_running_episodes != 0:
 
                 # log average reward till last episode
                 log_avg_reward = log_running_reward / log_running_episodes
