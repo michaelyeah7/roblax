@@ -30,6 +30,14 @@ register(
 register(
     id='jbdl_pendulum-v0',
     entry_point='gym_rbdl.envs:PendulumJBDLEnv',
+    max_episode_steps=200,
+    reward_threshold=8.0,
+    nondeterministic = True,
+)
+
+register(
+    id='jbdl_pendulum-v1',
+    entry_point='gym_rbdl.envs:PendulumEnv',
     max_episode_steps=500,
     reward_threshold=8.0,
     nondeterministic = True,

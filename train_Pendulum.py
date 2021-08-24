@@ -29,7 +29,7 @@ def train():
     # env_name = "RoboschoolHalfCheetah-v1"
     # env_name = "jbdl_half_cheetah-v0"
     # env_name = "jbdl_half_cheetah-v0"
-    env_name = "jbdl_pendulum-v0"
+    env_name = "jbdl_pendulum-v1"
 
     has_continuous_action_space = True  # continuous action space; else discrete
 
@@ -233,7 +233,7 @@ def train():
             next_state = next_state.reshape((1,state_dim))
             SAC_agent.step(state, action, reward, next_state, done, time_step)
             state = next_state
-            env.osim_render()
+            # env.osim_render()
             SAC_agent.buffer.rewards.append(reward)
             SAC_agent.buffer.is_terminals.append(done)
             current_ep_reward += reward

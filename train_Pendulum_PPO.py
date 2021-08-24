@@ -29,12 +29,14 @@ def train():
     # env_name = "jbdl_half_cheetah-v0"
     # env_name = "jbdl_half_cheetah-v0"
     # env_name = "jbdl_cartpole-v1"
-    env_name = "jbdl_pendulum-v0"
+    # env_name = "jbdl_pendulum-v0"
+    env_name = "jbdl_pendulum-v1"
 
     has_continuous_action_space = True  # continuous action space; else discrete
 
     # max_ep_len = 1000                   # max timesteps in one episode
-    max_ep_len = 500 
+    # max_ep_len = 500 
+    max_ep_len = 200 
     max_training_timesteps = int(3e6)   # break training loop if timeteps > max_training_timesteps
 
     print_freq = max_ep_len * 10        # print avg reward in the interval (in num timesteps)
@@ -229,7 +231,7 @@ def train():
             # print("action",action)
             # print("state",state)
             # env.plt_render()
-            env.osim_render()
+            # env.osim_render()
             # print("action",type(action))
             # print("state",state)
             # print("reward",type(reward))
