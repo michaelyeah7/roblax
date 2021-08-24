@@ -20,10 +20,10 @@ from jax import jit, vmap
 from jax.ops import index_update, index
 # from jbdlenvs.utils.parser import URDFBasedRobot
 
-from Simulator.UrdfWrapper import UrdfWrapper
+from simulator.UrdfWrapper import UrdfWrapper
 #   from jaxRBDL.Utils.UrdfWrapper_guo import UrdfWrapper
-from Simulator.ObdlRender import ObdlRender
-from Simulator.ObdlSim import ObdlSim
+from simulator.ObdlRender import ObdlRender
+from simulator.ObdlSim import ObdlSim
 
 M_CART = 1.0
 M_POLE = 0.1

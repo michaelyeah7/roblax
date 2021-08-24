@@ -12,10 +12,10 @@ from gym.utils import seeding
 # from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
 from jbdl.rbdl.dynamics.forward_dynamics import  forward_dynamics, forward_dynamics_core
 # from pyRBDL.Dynamics.ForwardDynamics import ForwardDynamics
-from Simulator.UrdfWrapper import UrdfWrapper
+from simulator.UrdfWrapper import UrdfWrapper
 # from jaxRBDL.Utils.UrdfWrapper_guo import UrdfWrapper
-from Simulator.ObdlRender import ObdlRender
-from Simulator.ObdlSim import ObdlSim
+from simulator.ObdlRender import ObdlRender
+from simulator.ObdlSim import ObdlSim
 import os
 import pybullet as p
 from numpy import sin, cos

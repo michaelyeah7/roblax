@@ -1,7 +1,7 @@
 import numpy as np
 import json
-from Simulator.UrdfReader import URDF
-from Simulator.UrdfUtils import transform_origin,rpy_to_matrix
+from simulator.UrdfReader import URDF
+from simulator.UrdfUtils import transform_origin,rpy_to_matrix
 from jbdl.rbdl.math.spatial_transform import spatial_transform
 from jbdl.rbdl.model.rigid_body_inertia import rigid_body_inertia
 import jax.numpy as jnp
