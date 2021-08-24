@@ -19,7 +19,8 @@ import jax.numpy as jnp
 import numpy as np
 
 # from utils import Random
-from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
+# from jaxRBDL.Dynamics.ForwardDynamics import ForwardDynamics, ForwardDynamicsCore
+from jbdl.rbdl.dynamics.forward_dynamics import  forward_dynamics, forward_dynamics_core
 # from pyRBDL.Dynamics.ForwardDynamics import ForwardDynamics
 from Simulator.UrdfWrapper import UrdfWrapper
 # from jaxRBDL.Utils.UrdfWrapper_guo import UrdfWrapper
@@ -84,7 +85,7 @@ class Cartpole_rbdl():
         # self.osim = ObdlSim(self.model,dt=self.tau,vis=True)
         
         #three dynamic options "RBDL" "Original" "PDP" "DDPG"
-        self.dynamics_option = "DDPG"
+        self.dynamics_option = "RBDL"
         # self.model["NB"] = self.model["NB"] + 1 
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
@@ -194,7 +195,7 @@ class Cartpole_rbdl():
                 # print("qdot",qdot)
                 # print("force",force)
                 input = (self.model, q, qdot, torque)
-                accelerations = ForwardDynamics(*input)
+                accelerations = forward_dynamics(*input)
                 # print("accelerations",accelerations)
                 # xacc = accelerations[2][0]
                 # thetaacc = accelerations[3][0]

@@ -87,7 +87,7 @@ class Inverted_Pendulum():
             # print("torque",torque)
             input = (self.model, q, qdot, torque)
             #ForwardDynamics return shape(NB, 1) array
-            qddot = ForwardDynamics(*input)
+            qddot = forward_dynamics(*input)
             qddot = qddot.flatten()
             # qddot = jnp.clip(qddot,0,0.5)
             # print("qddot",qddot)

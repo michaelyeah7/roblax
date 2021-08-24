@@ -64,12 +64,15 @@ class UrdfWrapper(object):
     @property
     def model(self):
         model = dict()
-        model["NB"] = self.NB
+        # model["NB"] = self.NB
+        model["nb"] = self.NB
         model["a_grav"] = self.a_grav
         model["jtype"] = self.jtype
         model["jaxis"] = self.jaxis
-        model["Xtree"] = self.Xtree
-        model["I"] = self.I
+        # model["Xtree"] = self.Xtree
+        model["x_tree"] = self.Xtree
+        # model["I"] = self.I
+        model["inertia"] = self.I
         model["parent"] = self.parent
         model["jname"] = self.jname
         model["urdf_path"] = self.urdf_path
