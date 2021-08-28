@@ -81,3 +81,15 @@ Run on Magics Cluster
     export PYTHONPATH=$PYTHONPATH:$PWD
     XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/local/cuda-11.2 python examples/cartpole_NN.py
     ```
+
+#Citing Roblax
+If you would like to reference Roblax in a publication, please use:
+```
+@software{roblax2021github,
+  author = {Guo Ye, Qinjie Lin, Tim Lau, Zhaoran Wang, Han Liu},
+  title = {Roblax - A Fully Differentiable Rigid Body Simulator for Robotic Control},
+  url = {http://github.com/michaelyeah7/roblax},
+  version = {0.1.4},
+  year = {2021},
+}
+```
