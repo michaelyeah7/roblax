@@ -82,7 +82,7 @@ Run on Magics Cluster
     XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/local/cuda-11.2 python examples/cartpole_NN.py
     ```
 
-#Citing Roblax
+## Citing Roblax
 If you would like to reference Roblax in a publication, please use:
 ```
 @software{roblax2021github,
