@@ -5,7 +5,7 @@
 RobLAX is a differentiable rigid body physics engine with contact1constraints that can assists various model-based methods.
 RobLAX is written in JAX and implements [environments](envs) and [model-base algorithm](model_based_RL.py) using [jbdl](https://github.com/Tencent-RoboticsX/jbdl). A render and urdf parser also included to extend to more realistic robotic application.
 
-Brax also includes a suite of learning algorithms that train agents in seconds to minutes:
+RobLAX also includes a suite of learning algorithms that train agents in seconds to minutes:
 *   Baseline learning algorithms such as
     [PPO](https://github.com/michaelyeah7/roblax/blob/Guo/PPO.py),
     [SAC](hhttps://github.com/michaelyeah7/roblax/blob/Guo/SAC.py)
