@@ -1,4 +1,4 @@
-# Magics MBRL
+# Roblax
 
 ## Description
 <!-- This simulator contains several simple robotic envs written in [JAX](https://github.com/google/jax) and with a Neural Network controller implemented. A render and urdf parser also included to extend to more realistic robotic application. -->
