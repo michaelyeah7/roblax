@@ -1,9 +1,9 @@
-# Roblax
+# RobLAX
 
 ## Description
 <!-- This simulator contains several simple robotic envs written in [JAX](https://github.com/google/jax) and with a Neural Network controller implemented. A render and urdf parser also included to extend to more realistic robotic application. -->
-This repo implements [environments](envs) and [model-base algorithm](model_based_RL.py) using [jbdl](https://github.com/Tencent-RoboticsX/jbdl).
- A render and urdf parser also included to extend to more realistic robotic application.
+RobLAX is a differentiable rigid body physics engine with contact1constraints that can assists various model-based methods.
+RobLAX is written in JAX and implements [environments](envs) and [model-base algorithm](model_based_RL.py) using [jbdl](https://github.com/Tencent-RoboticsX/jbdl). A render and urdf parser also included to extend to more realistic robotic application.
 
 
 ## Model-based Reinforcement Learning
@@ -82,7 +82,7 @@ Run on Magics Cluster
     XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/local/cuda-11.2 python examples/cartpole_NN.py
     ```
 
-## Citing Roblax
+## Citing RobLAX
 If you would like to reference Roblax in a publication, please use:
 ```
 @software{roblax2021github,
