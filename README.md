@@ -8,7 +8,7 @@ RobLAX is written in JAX and implements [environments](envs) and [model-base alg
 RobLAX also includes a suite of learning algorithms that train agents in seconds to minutes:
 *   Baseline learning algorithms such as
     [PPO](https://github.com/michaelyeah7/roblax/blob/Guo/PPO.py),
-    [SAC](hhttps://github.com/michaelyeah7/roblax/blob/Guo/SAC.py)
+    [SAC](hhttps://github.com/michaelyeah7/roblax/blob/Guo/SAC.py).
 *   An new actor-critic mbrl algorithm, Model-based Reinforcement Learning
 
 
