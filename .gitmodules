@@ -1,3 +1,4 @@
 [submodule "jbdl"]
 	path = jbdl
 	url = https://github.com/Tencent-RoboticsX/jbdl.git
+	branch = dev-open
