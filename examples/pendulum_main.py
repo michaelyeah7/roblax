@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import jax
 from jax import lax
 from envs.pendulum import Pendulum
-from envs.inverted_pendulum import Inverted_Pendulum
+# from envs.inverted_pendulum import Inverted_Pendulum
 # from agents import Deep_Pendulum
 from agent import Deep_Agent
 import copy

@@ -1,15 +1,15 @@
 import pybullet as p
 import pybullet_data
 import numpy as np
-from Simulator.UrdfUtils import matrix_to_rpy
-from pyRBDL.Kinematics.CalcBodyToBaseCoordinates import CalcBodyToBaseCoordinates
-from pyRBDL.Kinematics.TransformToPosition import TransformToPosition
+from simulator.UrdfUtils import matrix_to_rpy
+from jbdl.rbdl.kinematics.calc_body_to_base_coordinates import calc_body_to_base_coordinates
+from jbdl.rbdl.kinematics.transform_to_position import transform_to_position
 import time
 import math
 import os
 import jax.numpy as jnp
-from Simulator.UrdfReader import URDF
-from Simulator.UrdfWrapper import UrdfWrapper
+# from Simulator.UrdfReader import URDF
+from simulator.UrdfWrapper import UrdfWrapper
 
 
 class RenderObject():
@@ -326,7 +326,7 @@ class ObdlRender():
         local_pos = np.asarray(obj.origin).flatten() 
         _jid = obj.parent_joint +1 #TODO need discuss
         input = (model, q, _jid, local_pos)
-        pos = CalcBodyToBaseCoordinates(*input)
+        pos = calc_body_to_base_coordinates(*input)
         
         _rid = obj.parent_joint
         # rpy = np.array(self.rpys[_rid]) 

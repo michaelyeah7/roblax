@@ -1,10 +1,13 @@
 from simulator.ObdlRender import ObdlRender
 from simulator.UrdfWrapper import UrdfWrapper
-from pyRBDL.Dynamics.CompositeRigidBodyAlgorithm import CompositeRigidBodyAlgorithm
-from pyRBDL.Dynamics.ForwardDynamics import ForwardDynamics
-from pyRBDL.Dynamics.InverseDynamics import InverseDynamics
-from pyRBDL.Contact.CalcContactJacobian import CalcContactJacobian
-from pyRBDL.Contact.CalcContactJdotQdot import CalcContactJdotQdot
+# from pyRBDL.Dynamics.CompositeRigidBodyAlgorithm import CompositeRigidBodyAlgorithm
+# from pyRBDL.Dynamics.ForwardDynamics import ForwardDynamics
+from jbdl.rbdl.dynamics.forward_dynamics import forward_dynamics
+# from pyRBDL.Dynamics.InverseDynamics import InverseDynamics
+# from pyRBDL.Contact.CalcContactJacobian import CalcContactJacobian
+# from pyRBDL.Contact.CalcContactJdotQdot import CalcContactJdotQdot
+from jbdl.experimental.contact.calc_contact_jacobian import calc_contact_jacobian
+from jbdl.experimental.contact.calc_contact_jdot_qdot import calc_contact_jdot_qdot
 import numpy as np
 import math
 
@@ -40,7 +43,8 @@ class ObdlSim():
         qdot = self.qdot.copy()
 
         input = (self.model, q, qdot, tau)
-        qddot_hat = ForwardDynamics(*input).flatten()
+        # qddot_hat = ForwardDynamics(*input).flatten()
+        qddot_hat = forward_dynamics(*input).flatten()
         q_hat,qdot_hat = self.calculate_q(dt=self.dt,q=q,qdot=qdot,qddot=qddot_hat)
 
         if(self.visual):
@@ -102,10 +106,10 @@ class ObdlSim():
         self.model['contactpoint'] = _cpts.copy()
 
         input = (self.model, self.q , qdot , _cflag, 3) #TODO last argument
-        _JdotDdot = CalcContactJdotQdot(*input)
+        _JdotDdot = calc_contact_jdot_qdot(*input)
 
         input = (self.model, self.q ,_cflag, 3)
-        _Jacob = CalcContactJacobian(*input)
+        _Jacob = calc_contact_jacobian(*input)
 
         _effect = _Jacob.T @ _JdotDdot # TODO odn't know why
         return  _effect.flatten()
